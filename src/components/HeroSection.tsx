@@ -65,6 +65,16 @@ const HeroSection = () => {
     const trimmed = text.trim();
     if (!trimmed || isLoading) return;
 
+    // Guest cap check
+    if (!user && isAtCap) {
+      dismissGate(); // reset first
+      setTimeout(() => {
+        // re-show gate
+        (window as any).__showGate?.();
+      }, 50);
+      return;
+    }
+
     const userMsg: Msg = { role: "user", content: trimmed };
     setMessages((prev) => [...prev, userMsg]);
     setQuery("");
