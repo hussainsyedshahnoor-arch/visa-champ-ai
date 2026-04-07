@@ -49,24 +49,51 @@ export type Database = {
       chat_sessions: {
         Row: {
           created_at: string
+          guest_id: string | null
           id: string
           title: string
           updated_at: string
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
+          guest_id?: string | null
           id?: string
           title?: string
           updated_at?: string
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
+          guest_id?: string | null
           id?: string
           title?: string
           updated_at?: string
-          user_id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      guest_sessions: {
+        Row: {
+          created_at: string
+          guest_id: string
+          id: string
+          message_count: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          guest_id: string
+          id?: string
+          message_count?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          guest_id?: string
+          id?: string
+          message_count?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -75,7 +102,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      migrate_guest_to_user: {
+        Args: { _guest_id: string; _user_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
