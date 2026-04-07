@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Globe, ArrowLeft, CheckCircle, AlertCircle, Loader2, FileText, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,10 +29,11 @@ interface VisaType {
 }
 
 const EligibilityCheck = () => {
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
   const [countries, setCountries] = useState<Country[]>([]);
   const [visaTypes, setVisaTypes] = useState<VisaType[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "");
   const [selectedVisaType, setSelectedVisaType] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<{ analysis: string; score: number | null } | null>(null);
