@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Globe, ArrowLeft, CheckCircle, AlertCircle, Loader2, FileText, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,6 +29,7 @@ interface VisaType {
 }
 
 const EligibilityCheck = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
   const [countries, setCountries] = useState<Country[]>([]);
@@ -422,10 +423,10 @@ const EligibilityCheck = () => {
               <Button className="flex-1 gap-2" onClick={() => { setStep(1); setResult(null); }}>
                 Check Another Country
               </Button>
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2" onClick={() => navigate("/apply")}>
                 <FileText className="h-4 w-4" /> Apply for Visa
               </Button>
-              <Button variant="outline" className="gap-2">
+              <Button variant="outline" className="gap-2" onClick={() => window.open("https://wa.me/923001234567?text=Hi%2C%20I%20need%20help%20with%20my%20tourist%20visa", "_blank")}>
                 <Phone className="h-4 w-4" /> Talk to Officer
               </Button>
             </div>
