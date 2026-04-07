@@ -19,8 +19,9 @@ const Navbar = () => {
         <div className="hidden items-center gap-8 md:flex">
           <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
           <Link to="/eligibility" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Eligibility Check</Link>
+          <Link to="/apply" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Apply</Link>
+          <Link to="/applications" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">My Applications</Link>
           <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
-          <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Testimonials</a>
         </div>
 
         <div className="hidden items-center gap-2 md:flex">
@@ -42,8 +43,9 @@ const Navbar = () => {
           <div className="flex flex-col gap-3">
             <a href="#how-it-works" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>How It Works</a>
             <Link to="/eligibility" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Eligibility Check</Link>
+            <Link to="/apply" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Apply</Link>
+            <Link to="/applications" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>My Applications</Link>
             <a href="#features" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Features</a>
-            <a href="#testimonials" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Testimonials</a>
             <hr />
             <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
             <Button asChild><Link to="/signup">Sign up free</Link></Button>
