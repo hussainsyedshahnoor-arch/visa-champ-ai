@@ -9,7 +9,9 @@ import { streamChat, type Msg } from "@/lib/chat-stream";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useChatHistory } from "@/hooks/use-chat-history";
+import { useGuestSession } from "@/hooks/use-guest-session";
 import ChatHistorySidebar from "@/components/ChatHistorySidebar";
+import SignupGateModal from "@/components/SignupGateModal";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const SUGGESTED_PROMPTS = [
