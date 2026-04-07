@@ -104,6 +104,7 @@ export default {
         "slide-up": "slide-up 0.6s ease-out forwards",
         "pulse-dot": "pulse-dot 1.4s ease-in-out infinite",
         marquee: "marquee 30s linear infinite",
+        "marquee-slow": "marquee 45s linear infinite",
       },
     },
   },
