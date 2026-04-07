@@ -19,7 +19,8 @@ const Index = () => {
 
   useEffect(() => {
     if (chatOpen && chatRef.current) {
-      chatRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      const yOffset = chatRef.current.getBoundingClientRect().top + window.scrollY - 80;
+      window.scrollTo({ top: yOffset, behavior: "smooth" });
     }
   }, [chatOpen]);
 
