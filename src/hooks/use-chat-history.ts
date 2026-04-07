@@ -41,7 +41,7 @@ export function useChatHistory(userId: string | undefined, guestId?: string) {
 
     const { data, error } = await supabase
       .from("chat_sessions")
-      .insert(insertData)
+      .insert(insertData as any)
       .select("id")
       .single();
     if (error || !data) return null;
