@@ -307,7 +307,7 @@ const HeroSection = () => {
                       variant="outline"
                       size="sm"
                       className="gap-2 rounded-full border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-                      onClick={() => sendMessage("I want to apply for my visa")}
+                      onClick={() => window.location.assign("/apply")}
                     >
                       <FileText className="h-4 w-4" />
                       Apply for Visa
@@ -316,7 +316,7 @@ const HeroSection = () => {
                       variant="outline"
                       size="sm"
                       className="gap-2 rounded-full border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-                      onClick={() => sendMessage("I want to talk to a visa officer")}
+                      onClick={() => window.location.assign("https://wa.me/923001234567?text=Hi%2C%20I%20need%20help%20with%20my%20tourist%20visa")}
                     >
                       <Phone className="h-4 w-4" />
                       Talk to Visa Officer
