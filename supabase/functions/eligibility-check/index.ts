@@ -18,43 +18,64 @@ serve(async (req) => {
 
     const prompt = `You are Visa Champ, an expert visa eligibility evaluator for Pakistani passport holders.
 
-Evaluate this tourist visa application and provide a detailed assessment.
+Evaluate this tourist visa application and provide a detailed, profile-aware assessment.
 
 **Destination:** ${countryName}
 **Visa Type:** ${visaTypeName}
 
-**Applicant Details:**
+**Applicant Profile:**
 - Full Name: ${formData.fullName}
 - Age: ${formData.age}
+- Marital Status: ${formData.maritalStatus}
+- Travelling With: ${formData.travellingWith || "Solo"}
+- Number of Dependents: ${formData.numberOfDependents || "0"}
 - Employment Status: ${formData.employmentStatus}
 - Monthly Income (PKR): ${formData.monthlyIncome}
 - Bank Balance (PKR): ${formData.bankBalance}
 - Has Travel History: ${formData.hasTravelHistory ? "Yes" : "No"}
 - Previous Countries Visited: ${formData.previousCountries || "None"}
-- Owns Property: ${formData.ownsProperty ? "Yes" : "No"}
-- Marital Status: ${formData.maritalStatus}
+- Owns Property in Pakistan: ${formData.ownsProperty ? "Yes" : "No"}
+- Has Other Nationality/Passport: ${formData.hasOtherNationality ? "Yes — " + (formData.otherNationality || "Not specified") : "No"}
+- Has Residency in Another Country: ${formData.hasOtherResidency ? "Yes — " + (formData.otherResidencyCountry || "Not specified") : "No"}
+- Ties to Home Country: ${formData.hasReturnTies || "Not specified"}
 - Purpose of Visit: ${formData.purposeOfVisit}
 
 **Required Documents for this visa:**
 ${documents.map((d: any) => `- ${d.document_name} (${d.is_mandatory ? "Mandatory" : "Optional"}): ${d.description}`).join("\n")}
 
 **Eligibility Criteria:**
-${criteria.map((c: any) => `- ${c.criteria_name}: ${c.criteria_description}${c.min_value ? ` (Min: ${c.min_value})` : ""} [${c.is_mandatory ? "Required" : "Recommended"}]`).join("\n")}
+${criteria.map((c: any) => `- ${c.criteria_name}: ${c.criteria_description}${c.min_value ? " (Min: " + c.min_value + ")" : ""} [${c.is_mandatory ? "Required" : "Recommended"}]`).join("\n")}
+
+SCORING INSTRUCTIONS — YOU MUST FOLLOW THIS:
+The score must heavily factor in the applicant's PROFILE TYPE and TIES to home country. Two applicants with similar finances but different profiles must get VERY different scores:
+
+**Profile Risk Matrix:**
+- Single, young (18-30), unemployed/student, no property, no travel history, no dependents = HIGH RISK (score 15-35)
+- Single, employed, some travel history, no property = MODERATE-HIGH RISK (score 30-50)
+- Married, employed, property owner, travel history, travelling with family = LOW RISK (score 60-85)
+- Family traveller, property owner, strong income, prior visa stamps, other residency/nationality = VERY LOW RISK (score 75-95)
+- Has residency/nationality in a Western/developed country = SIGNIFICANT BOOST (+15-25 points)
+
+**Ties to Home Country (critical factor):**
+- Strong ties: owns property, has family/dependents in Pakistan, stable long-term employment, business owner = POSITIVE
+- Weak ties: single, no property, no dependents, recently employed/unemployed, student = NEGATIVE
 
 Provide your assessment in this format:
 1. **Eligibility Score:** X/100
-2. **Verdict:** (High Chance / Medium Chance / Low Chance)
-3. **Strengths:** (bullet points of strong aspects)
-4. **Weaknesses:** (bullet points of concerns)
-5. **Missing Documents:** (list any they likely need to prepare)
-6. **Tips to Improve Chances:** (actionable advice)
-7. **Estimated Processing Time:** based on the visa type
+2. **Applicant Profile:** (e.g., "Single traveller with weak ties" or "Family traveller with strong ties")
+3. **Verdict:** (High Chance / Medium Chance / Low Chance)
+4. **Strengths:** (bullet points of strong aspects)
+5. **Weaknesses:** (bullet points of concerns)
+6. **Missing Documents:** (list any they likely need to prepare)
+7. **Tips to Improve Chances:** (actionable advice specific to their profile type)
+8. **Estimated Processing Time:** based on the visa type
 
 CRITICAL RULES:
 - Do NOT mention any pricing, fees, or costs
 - Do NOT share website links or URLs
 - Do NOT mention where to apply
 - Focus only on eligibility evaluation and guidance
+- Be REALISTIC — do not sugarcoat weak profiles
 - End with: "This is AI guidance, not legal advice."`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {

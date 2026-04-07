@@ -49,6 +49,13 @@ const EligibilityCheck = () => {
     ownsProperty: false,
     maritalStatus: "",
     purposeOfVisit: "",
+    travellingWith: "",
+    numberOfDependents: "",
+    hasOtherNationality: false,
+    otherNationality: "",
+    hasOtherResidency: false,
+    otherResidencyCountry: "",
+    hasReturnTies: "",
   });
 
   useEffect(() => {
@@ -279,6 +286,54 @@ const EligibilityCheck = () => {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Travelling With</Label>
+                  <Select value={formData.travellingWith} onValueChange={(v) => updateForm("travellingWith", v)}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="solo">Solo</SelectItem>
+                      <SelectItem value="spouse">With Spouse</SelectItem>
+                      <SelectItem value="family">With Family (Spouse + Children)</SelectItem>
+                      <SelectItem value="group">Group / Friends</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>Number of Dependents</Label>
+                  <Input type="number" value={formData.numberOfDependents} onChange={(e) => updateForm("numberOfDependents", e.target.value)} placeholder="0" />
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" id="otherNationality" checked={formData.hasOtherNationality} onChange={(e) => updateForm("hasOtherNationality", e.target.checked)} className="rounded" />
+                  <Label htmlFor="otherNationality">I hold another nationality / passport</Label>
+                </div>
+                {formData.hasOtherNationality && (
+                  <Input value={formData.otherNationality} onChange={(e) => updateForm("otherNationality", e.target.value)} placeholder="e.g., British, Canadian, UAE" />
+                )}
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" id="otherResidency" checked={formData.hasOtherResidency} onChange={(e) => updateForm("hasOtherResidency", e.target.checked)} className="rounded" />
+                  <Label htmlFor="otherResidency">I have residency in another country</Label>
+                </div>
+                {formData.hasOtherResidency && (
+                  <Input value={formData.otherResidencyCountry} onChange={(e) => updateForm("otherResidencyCountry", e.target.value)} placeholder="e.g., UAE, UK, Canada" />
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Ties to Home Country</Label>
+                <Select value={formData.hasReturnTies} onValueChange={(v) => updateForm("hasReturnTies", v)}>
+                  <SelectTrigger><SelectValue placeholder="How strong are your ties?" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="strong">Strong — Property, business, family dependents in Pakistan</SelectItem>
+                    <SelectItem value="moderate">Moderate — Stable job, some family ties</SelectItem>
+                    <SelectItem value="weak">Weak — Student, recently employed, few ties</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="space-y-2">
                 <Label>Purpose of Visit</Label>
                 <Input value={formData.purposeOfVisit} onChange={(e) => updateForm("purposeOfVisit", e.target.value)} placeholder="Tourism, family visit, sightseeing..." />
@@ -317,6 +372,15 @@ const EligibilityCheck = () => {
                 <div className="flex justify-between"><span className="text-muted-foreground">Travel History</span><span className="font-medium">{formData.hasTravelHistory ? "Yes" : "No"}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Property Owner</span><span className="font-medium">{formData.ownsProperty ? "Yes" : "No"}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Marital Status</span><span className="font-medium capitalize">{formData.maritalStatus}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Travelling With</span><span className="font-medium capitalize">{formData.travellingWith || "Solo"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Dependents</span><span className="font-medium">{formData.numberOfDependents || "0"}</span></div>
+                {formData.hasOtherNationality && (
+                  <div className="flex justify-between"><span className="text-muted-foreground">Other Nationality</span><span className="font-medium">{formData.otherNationality}</span></div>
+                )}
+                {formData.hasOtherResidency && (
+                  <div className="flex justify-between"><span className="text-muted-foreground">Other Residency</span><span className="font-medium">{formData.otherResidencyCountry}</span></div>
+                )}
+                <div className="flex justify-between"><span className="text-muted-foreground">Ties to Pakistan</span><span className="font-medium capitalize">{formData.hasReturnTies || "Not specified"}</span></div>
               </div>
 
               <div className="flex gap-3">
