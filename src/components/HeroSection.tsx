@@ -28,6 +28,7 @@ const HeroSection = () => {
   const [hasResponse, setHasResponse] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showSignupGate, setShowSignupGate] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const sessionIdRef = useRef<string | null>(null);
