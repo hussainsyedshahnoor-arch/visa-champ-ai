@@ -101,6 +101,7 @@ export type Database = {
           applicant_email: string | null
           applicant_name: string | null
           applicant_phone: string | null
+          assigned_to: string | null
           country_id: string | null
           created_at: string
           id: string
@@ -116,6 +117,7 @@ export type Database = {
           applicant_email?: string | null
           applicant_name?: string | null
           applicant_phone?: string | null
+          assigned_to?: string | null
           country_id?: string | null
           created_at?: string
           id?: string
@@ -131,6 +133,7 @@ export type Database = {
           applicant_email?: string | null
           applicant_name?: string | null
           applicant_phone?: string | null
+          assigned_to?: string | null
           country_id?: string | null
           created_at?: string
           id?: string

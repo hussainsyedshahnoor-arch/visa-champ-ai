@@ -1,0 +1,1 @@
+ALTER TABLE public.applications ADD COLUMN assigned_to text DEFAULT null;
