@@ -322,17 +322,8 @@ const EligibilityCheck = () => {
                 )}
               </div>
 
-              <div className="space-y-2">
-                <Label>Ties to Home Country</Label>
-                <Select value={formData.hasReturnTies} onValueChange={(v) => updateForm("hasReturnTies", v)}>
-                  <SelectTrigger><SelectValue placeholder="How strong are your ties?" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="strong">Strong — Property, business, family dependents in Pakistan</SelectItem>
-                    <SelectItem value="moderate">Moderate — Stable job, some family ties</SelectItem>
-                    <SelectItem value="weak">Weak — Student, recently employed, few ties</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+
+
 
               <div className="space-y-2">
                 <Label>Purpose of Visit</Label>
@@ -380,7 +371,7 @@ const EligibilityCheck = () => {
                 {formData.hasOtherResidency && (
                   <div className="flex justify-between"><span className="text-muted-foreground">Other Residency</span><span className="font-medium">{formData.otherResidencyCountry}</span></div>
                 )}
-                <div className="flex justify-between"><span className="text-muted-foreground">Ties to Pakistan</span><span className="font-medium capitalize">{formData.hasReturnTies || "Not specified"}</span></div>
+                
               </div>
 
               <div className="flex gap-3">
