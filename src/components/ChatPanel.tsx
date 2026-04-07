@@ -103,7 +103,7 @@ const ChatPanel = ({ initialPrompt, onClose }: ChatPanelProps) => {
         </div>
 
         {/* Messages */}
-        <div ref={scrollRef} className="h-[400px] overflow-y-auto p-5">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-5">
           <div className="space-y-4">
             {messages.map((msg, i) => (
               <ChatMessage key={i} role={msg.role} content={msg.content} />
