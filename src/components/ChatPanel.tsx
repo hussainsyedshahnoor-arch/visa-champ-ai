@@ -85,7 +85,7 @@ const ChatPanel = ({ initialPrompt, onClose }: ChatPanelProps) => {
 
   return (
     <div className="container px-4 pb-12">
-      <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl border bg-card shadow-2xl">
+      <div className="mx-auto flex max-w-3xl flex-col overflow-hidden rounded-2xl border bg-card shadow-2xl" style={{ height: "560px" }}>
         {/* Header */}
         <div className="flex items-center justify-between border-b bg-card px-5 py-3">
           <div className="flex items-center gap-3">
