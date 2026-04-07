@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { Send, ArrowDown, Mic, MicOff, FileText, Phone } from "lucide-react";
+import { Send, ArrowDown, Mic, MicOff, FileText, Phone, MessageSquarePlus } from "lucide-react";
 import { Globe } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
