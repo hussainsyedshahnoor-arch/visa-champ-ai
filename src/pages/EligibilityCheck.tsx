@@ -29,10 +29,11 @@ interface VisaType {
 }
 
 const EligibilityCheck = () => {
+  const [searchParams] = useSearchParams();
   const [step, setStep] = useState(1);
   const [countries, setCountries] = useState<Country[]>([]);
   const [visaTypes, setVisaTypes] = useState<VisaType[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "");
   const [selectedVisaType, setSelectedVisaType] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<{ analysis: string; score: number | null } | null>(null);
