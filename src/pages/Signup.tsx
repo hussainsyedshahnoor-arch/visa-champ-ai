@@ -28,14 +28,14 @@ const Signup = () => {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Check your email", description: "We sent you a confirmation link." });
-      navigate("/chat");
+      navigate("/");
     }
   };
 
   const handleGoogleSignup = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/chat` },
+      options: { redirectTo: `${window.location.origin}/` },
     });
   };
 
