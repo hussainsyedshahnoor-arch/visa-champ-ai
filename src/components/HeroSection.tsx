@@ -33,6 +33,7 @@ const HeroSection = () => {
   const sessionIdRef = useRef<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { guestId, isAtCap, showGate, incrementCount, dismissGate, migrateToUser } = useGuestSession();
 
   const {
     sessions,
@@ -43,7 +44,14 @@ const HeroSection = () => {
     loadSession,
     deleteSession,
     clearActive,
-  } = useChatHistory(user?.id);
+  } = useChatHistory(user?.id, guestId);
+
+  // Migrate guest data when user logs in
+  useEffect(() => {
+    if (user && guestId) {
+      migrateToUser(user.id).then(() => fetchSessions());
+    }
+  }, [user?.id]);
 
   const chatActive = messages.length > 0;
 
