@@ -1,6 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { v4 as uuidv4 } from "crypto";
 
 const GUEST_ID_KEY = "visa_champ_guest_id";
 const GUEST_COUNT_KEY = "visa_champ_guest_count";
