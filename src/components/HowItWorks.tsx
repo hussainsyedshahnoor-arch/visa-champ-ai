@@ -1,10 +1,10 @@
-import { MessageCircle, ClipboardList, CheckCircle, Send } from "lucide-react";
+import { MessageCircle, ClipboardList, CheckCircle, Plane } from "lucide-react";
 
 const steps = [
-  { icon: MessageCircle, title: "Chat with Visa Champ", desc: "Tell us where you want to go and why. Our AI asks the right questions." },
-  { icon: ClipboardList, title: "Get Requirements", desc: "Receive a personalized checklist of required documents and eligibility criteria." },
-  { icon: CheckCircle, title: "Check Eligibility", desc: "Upload documents for instant verification and gap analysis." },
-  { icon: Send, title: "Apply with Confidence", desc: "Submit your application or connect with a visa officer for support." },
+  { icon: MessageCircle, title: "Ask Visa Champ", desc: "Tell us which country you want to visit. Our AI knows the requirements." },
+  { icon: ClipboardList, title: "Get Your Checklist", desc: "Receive a personalized document checklist for your tourist visa." },
+  { icon: CheckCircle, title: "Check Eligibility", desc: "Find out if you qualify and what gaps need to be addressed." },
+  { icon: Plane, title: "Apply & Travel", desc: "Follow the step-by-step guide to submit your tourist visa application." },
 ];
 
 const HowItWorks = () => (
@@ -12,7 +12,7 @@ const HowItWorks = () => (
     <div className="container">
       <div className="mx-auto max-w-2xl text-center mb-14">
         <h2 className="text-3xl font-bold mb-4">How It Works</h2>
-        <p className="text-muted-foreground text-lg">From first question to submitted application — four simple steps.</p>
+        <p className="text-muted-foreground text-lg">From first question to tourist visa application — four simple steps.</p>
       </div>
 
       <div className="grid gap-8 md:grid-cols-4">
