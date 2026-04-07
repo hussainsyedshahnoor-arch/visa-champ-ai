@@ -359,7 +359,7 @@ const Chat = () => {
                       variant="outline"
                       size="sm"
                       className="gap-2 rounded-full"
-                      onClick={() => navigate("/apply")}
+                      onClick={() => navigate("/eligibility")}
                     >
                       <FileText className="h-4 w-4" />
                       Apply for Visa

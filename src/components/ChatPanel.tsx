@@ -119,7 +119,7 @@ const ChatPanel = ({ initialPrompt, onClose }: ChatPanelProps) => {
               variant="outline"
               size="sm"
               className="gap-2 rounded-full"
-              onClick={() => window.location.href = "/apply"}
+              onClick={() => window.location.href = "/eligibility"}
             >
               <FileText className="h-4 w-4" />
               Apply for Visa
