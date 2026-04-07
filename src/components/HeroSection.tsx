@@ -307,7 +307,7 @@ const HeroSection = () => {
                       variant="outline"
                       size="sm"
                       className="gap-2 rounded-full border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-                      onClick={() => window.location.assign("/apply")}
+                      onClick={() => window.location.assign("/eligibility")}
                     >
                       <FileText className="h-4 w-4" />
                       Apply for Visa
