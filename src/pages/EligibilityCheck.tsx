@@ -372,6 +372,15 @@ const EligibilityCheck = () => {
                 <div className="flex justify-between"><span className="text-muted-foreground">Travel History</span><span className="font-medium">{formData.hasTravelHistory ? "Yes" : "No"}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Property Owner</span><span className="font-medium">{formData.ownsProperty ? "Yes" : "No"}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Marital Status</span><span className="font-medium capitalize">{formData.maritalStatus}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Travelling With</span><span className="font-medium capitalize">{formData.travellingWith || "Solo"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Dependents</span><span className="font-medium">{formData.numberOfDependents || "0"}</span></div>
+                {formData.hasOtherNationality && (
+                  <div className="flex justify-between"><span className="text-muted-foreground">Other Nationality</span><span className="font-medium">{formData.otherNationality}</span></div>
+                )}
+                {formData.hasOtherResidency && (
+                  <div className="flex justify-between"><span className="text-muted-foreground">Other Residency</span><span className="font-medium">{formData.otherResidencyCountry}</span></div>
+                )}
+                <div className="flex justify-between"><span className="text-muted-foreground">Ties to Pakistan</span><span className="font-medium capitalize">{formData.hasReturnTies || "Not specified"}</span></div>
               </div>
 
               <div className="flex gap-3">
