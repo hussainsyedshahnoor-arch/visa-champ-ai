@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
+import FlagMarquee from "@/components/FlagMarquee";
 import HowItWorks from "@/components/HowItWorks";
 import Features from "@/components/Features";
 import Testimonials from "@/components/Testimonials";
@@ -10,9 +11,11 @@ const Index = () => (
     <Navbar />
     <main>
       <HeroSection />
+      <FlagMarquee />
       <HowItWorks />
       <Features />
       <Testimonials />
+      <FlagMarquee />
     </main>
     <Footer />
   </div>
