@@ -1,6 +1,9 @@
-import { useState, useRef, useEffect } from "react";
-import { Send, ArrowDown, Plane } from "lucide-react";
-import ChatMessage from "@/components/ChatMessage";
+import { useState, useRef, useCallback } from "react";
+import { Send, ArrowDown, Mic, MicOff, FileText, Phone } from "lucide-react";
+import { Globe } from "lucide-react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import ReactMarkdown from "react-markdown";
 import TypingIndicator from "@/components/TypingIndicator";
 import { streamChat, type Msg } from "@/lib/chat-stream";
 import { useToast } from "@/hooks/use-toast";
@@ -18,7 +21,9 @@ const HeroSection = () => {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasResponse, setHasResponse] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
 
   const chatActive = messages.length > 0;
@@ -37,6 +42,7 @@ const HeroSection = () => {
     setMessages((prev) => [...prev, userMsg]);
     setQuery("");
     setIsLoading(true);
+    setHasResponse(false);
     scrollToBottom();
 
     let assistantContent = "";
@@ -70,6 +76,49 @@ const HeroSection = () => {
     }
   };
 
+  const toggleVoice = useCallback(() => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      toast({ title: "Not supported", description: "Speech recognition is not supported in this browser.", variant: "destructive" });
+      return;
+    }
+
+    if (isListening && recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = ""; // auto-detect language
+
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0].transcript)
+        .join("");
+      setQuery(transcript);
+
+      if (event.results[0].isFinal) {
+        setIsListening(false);
+        sendMessage(transcript);
+      }
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  }, [isListening, toast]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(query);
@@ -92,7 +141,7 @@ const HeroSection = () => {
 
       {/* Content area */}
       <div className="container relative z-10 flex flex-1 flex-col items-center px-4">
-        {/* Hero text — shrinks when chat is active */}
+        {/* Hero text */}
         <div className={`flex flex-col items-center text-center transition-all duration-500 ${chatActive ? "pt-8 pb-4" : "flex-1 justify-center"}`}>
           <h1 className={`font-extrabold tracking-tight text-white animate-fade-in transition-all duration-500 ${chatActive ? "mb-2 text-2xl md:text-3xl" : "mb-6 text-4xl md:text-6xl lg:text-7xl"}`}>
             Your visa. Sorted in{" "}
@@ -101,24 +150,70 @@ const HeroSection = () => {
 
           {!chatActive && (
             <p className="mb-10 max-w-2xl text-lg text-white/70 md:text-xl animate-fade-in" style={{ animationDelay: "0.1s" }}>
-              Ask me about tourist visa eligibility, documents, costs — I'll guide you through it.
+              Ask me about tourist visa eligibility, documents & requirements — I'll guide you through it.
             </p>
           )}
         </div>
 
-        {/* Chat messages area — only when chat is active */}
+        {/* Chat messages area */}
         {chatActive && (
           <div ref={scrollRef} className="w-full max-w-2xl flex-1 overflow-y-auto px-2 pb-4">
             <div className="space-y-4">
-              {messages.map((msg, i) => (
-                <ChatMessage key={i} role={msg.role} content={msg.content} />
-              ))}
+              {messages.map((msg, i) => {
+                const isUser = msg.role === "user";
+                return (
+                  <div key={i} className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarFallback className={isUser ? "bg-white/20 text-white" : "bg-primary text-primary-foreground"}>
+                        {isUser ? "👤" : <Globe className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm backdrop-blur-md ${
+                      isUser
+                        ? "bg-primary/80 text-white rounded-tr-md"
+                        : "bg-white/15 text-white rounded-tl-md"
+                    }`}>
+                      {isUser ? (
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                      ) : (
+                        <div className="prose prose-sm prose-invert max-w-none">
+                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
               {isLoading && messages[messages.length - 1]?.role !== "assistant" && <TypingIndicator />}
+
+              {/* Action buttons after response */}
+              {hasResponse && !isLoading && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 rounded-full border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
+                    onClick={() => sendMessage("I want to apply for my visa")}
+                  >
+                    <FileText className="h-4 w-4" />
+                    Apply for Visa
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 rounded-full border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
+                    onClick={() => sendMessage("I want to talk to a visa officer")}
+                  >
+                    <Phone className="h-4 w-4" />
+                    Talk to Visa Officer
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* Suggestion chips — only before chat starts */}
+        {/* Suggestion chips */}
         {!chatActive && (
           <div className="mb-6 flex flex-wrap justify-center gap-3 animate-fade-in" style={{ animationDelay: "0.3s" }}>
             {SUGGESTED_PROMPTS.map((prompt) => (
@@ -133,7 +228,7 @@ const HeroSection = () => {
           </div>
         )}
 
-        {/* Input bar — always at bottom */}
+        {/* Input bar */}
         <div className="w-full max-w-2xl pb-8 pt-2">
           <form
             onSubmit={handleSubmit}
@@ -148,6 +243,17 @@ const HeroSection = () => {
               className="flex-1 bg-transparent px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             <button
+              type="button"
+              onClick={toggleVoice}
+              className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors ${
+                isListening
+                  ? "bg-destructive text-white animate-pulse"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
+              }`}
+            >
+              {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+            </button>
+            <button
               type="submit"
               disabled={!query.trim() || isLoading}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
@@ -157,7 +263,7 @@ const HeroSection = () => {
           </form>
         </div>
 
-        {/* Scroll indicator — only before chat */}
+        {/* Scroll indicator */}
         {!chatActive && (
           <a
             href="#how-it-works"
