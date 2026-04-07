@@ -85,7 +85,7 @@ const ChatPanel = ({ initialPrompt, onClose }: ChatPanelProps) => {
 
   return (
     <div className="container px-4 pb-12">
-      <div className="mx-auto max-w-3xl overflow-hidden rounded-2xl border bg-card shadow-2xl">
+      <div className="mx-auto flex max-w-3xl flex-col overflow-hidden rounded-2xl border bg-card shadow-2xl" style={{ height: "560px" }}>
         {/* Header */}
         <div className="flex items-center justify-between border-b bg-card px-5 py-3">
           <div className="flex items-center gap-3">
@@ -103,7 +103,7 @@ const ChatPanel = ({ initialPrompt, onClose }: ChatPanelProps) => {
         </div>
 
         {/* Messages */}
-        <div ref={scrollRef} className="h-[400px] overflow-y-auto p-5">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto p-5">
           <div className="space-y-4">
             {messages.map((msg, i) => (
               <ChatMessage key={i} role={msg.role} content={msg.content} />
