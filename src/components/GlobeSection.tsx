@@ -57,12 +57,12 @@ function CountryMarker({
   onClick: () => void;
 }) {
   const coords = COUNTRY_COORDS[country.code];
-  if (!coords) return null;
-
   const position = useMemo(
-    () => latLngToVector3(coords[0], coords[1], radius),
+    () => coords ? latLngToVector3(coords[0], coords[1], radius) : null,
     [coords, radius]
   );
+
+  if (!position) return null;
 
   return (
     <group position={position}>
