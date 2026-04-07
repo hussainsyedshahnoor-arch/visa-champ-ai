@@ -79,8 +79,8 @@ const HeroSection = () => {
     setHasResponse(false);
     scrollToBottom();
 
-    // Create session on first message if logged in
-    if (!sessionIdRef.current && user) {
+    // Create session on first message
+    if (!sessionIdRef.current) {
       const newId = await createSession(trimmed);
       sessionIdRef.current = newId;
     }
@@ -88,6 +88,11 @@ const HeroSection = () => {
     // Save user message
     if (sessionIdRef.current) {
       await saveMessage(sessionIdRef.current, userMsg);
+    }
+
+    // Increment guest count
+    if (!user) {
+      await incrementCount();
     }
 
     let assistantContent = "";
