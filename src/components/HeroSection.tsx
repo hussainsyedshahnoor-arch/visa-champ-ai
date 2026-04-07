@@ -119,6 +119,17 @@ const HeroSection = () => {
     setIsListening(true);
   }, [isListening, toast]);
 
+  const startNewChat = useCallback(() => {
+    setMessages([]);
+    setQuery("");
+    setIsLoading(false);
+    setHasResponse(false);
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      setIsListening(false);
+    }
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(query);
