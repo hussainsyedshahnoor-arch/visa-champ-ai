@@ -67,11 +67,7 @@ const HeroSection = () => {
 
     // Guest cap check
     if (!user && isAtCap) {
-      dismissGate(); // reset first
-      setTimeout(() => {
-        // re-show gate
-        (window as any).__showGate?.();
-      }, 50);
+      setShowSignupGate(true);
       return;
     }
 
