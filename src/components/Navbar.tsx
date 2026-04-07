@@ -18,6 +18,7 @@ const Navbar = () => {
         {/* Desktop */}
         <div className="hidden items-center gap-8 md:flex">
           <a href="#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">How It Works</a>
+          <Link to="/eligibility" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Eligibility Check</Link>
           <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
           <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Testimonials</a>
         </div>
@@ -40,6 +41,7 @@ const Navbar = () => {
         <div className="border-t bg-card p-4 md:hidden">
           <div className="flex flex-col gap-3">
             <a href="#how-it-works" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>How It Works</a>
+            <Link to="/eligibility" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Eligibility Check</Link>
             <a href="#features" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Features</a>
             <a href="#testimonials" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Testimonials</a>
             <hr />
