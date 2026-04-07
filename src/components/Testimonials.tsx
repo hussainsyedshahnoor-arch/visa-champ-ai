@@ -3,16 +3,16 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Star } from "lucide-react";
 
 const reviews = [
-  { name: "Sarah M.", initials: "SM", text: "Visa Champ helped me understand exactly what I needed for my UK student visa. Saved me weeks of googling!", rating: 5 },
-  { name: "Ahmed K.", initials: "AK", text: "The eligibility check caught a missing document before I submitted. Would have been rejected otherwise!", rating: 5 },
-  { name: "Priya R.", initials: "PR", text: "Booked a call with a visa officer through the platform. Super professional and cleared all my doubts.", rating: 5 },
+  { name: "Ali R.", initials: "AR", text: "Visa Champ helped me understand exactly what I needed for my UAE tourist visa. Got approved on the first try!" },
+  { name: "Fatima K.", initials: "FK", text: "I was confused about Schengen visa documents. Visa Champ gave me a clear checklist — so helpful!" },
+  { name: "Hassan M.", initials: "HM", text: "Saved me hours of research. Got all the info about UK tourist visa requirements in minutes." },
 ];
 
 const Testimonials = () => (
   <section id="testimonials" className="py-20 bg-secondary/30">
     <div className="container">
       <div className="mx-auto max-w-2xl text-center mb-14">
-        <h2 className="text-3xl font-bold mb-4">Loved by Applicants</h2>
+        <h2 className="text-3xl font-bold mb-4">Trusted by Pakistani Travellers</h2>
         <p className="text-muted-foreground text-lg">See what our users say about their experience.</p>
       </div>
 
@@ -21,7 +21,7 @@ const Testimonials = () => (
           <Card key={i} className="bg-card animate-slide-up" style={{ animationDelay: `${i * 0.1}s` }}>
             <CardContent className="p-6">
               <div className="mb-3 flex gap-0.5">
-                {Array.from({ length: r.rating }).map((_, j) => (
+                {Array.from({ length: 5 }).map((_, j) => (
                   <Star key={j} className="h-4 w-4 fill-accent text-accent" />
                 ))}
               </div>

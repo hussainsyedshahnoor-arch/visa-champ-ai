@@ -10,9 +10,9 @@ import { useToast } from "@/hooks/use-toast";
 
 const SUGGESTED_PROMPTS = [
   "Tourist visa for UAE",
-  "Student visa for UK",
-  "Work visa for Canada",
-  "Schengen visa requirements",
+  "Tourist visa for UK",
+  "Schengen tourist visa",
+  "Tourist visa for USA",
 ];
 
 const Chat = () => {
@@ -23,7 +23,6 @@ const Chat = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Handle pre-filled prompt from URL
   useEffect(() => {
     const prompt = searchParams.get("prompt");
     if (prompt && messages.length === 0) {
@@ -85,7 +84,6 @@ const Chat = () => {
 
   return (
     <div className="flex h-screen flex-col bg-background">
-      {/* Header */}
       <header className="flex items-center gap-3 border-b bg-card px-4 py-3">
         <Button variant="ghost" size="icon" asChild>
           <Link to="/"><ArrowLeft className="h-5 w-5" /></Link>
@@ -96,12 +94,11 @@ const Chat = () => {
           </div>
           <div>
             <h1 className="text-sm font-semibold">Visa Champ</h1>
-            <p className="text-xs text-muted-foreground">AI Visa Consultant</p>
+            <p className="text-xs text-muted-foreground">Tourist Visa Consultant for Pakistan</p>
           </div>
         </div>
       </header>
 
-      {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
         <div className="mx-auto max-w-2xl space-y-4">
           {messages.length === 0 && (
@@ -111,7 +108,7 @@ const Chat = () => {
               </div>
               <h2 className="mb-2 text-xl font-bold">Welcome to Visa Champ</h2>
               <p className="mb-8 max-w-md text-muted-foreground">
-                I'm your AI visa consultant. Ask me about visa requirements, eligibility, or documents for any country.
+                I'm your AI tourist visa consultant for Pakistani passport holders. Ask me about requirements, documents, or eligibility for any country.
               </p>
               <div className="flex flex-wrap justify-center gap-2">
                 {SUGGESTED_PROMPTS.map((prompt) => (
@@ -135,20 +132,18 @@ const Chat = () => {
         </div>
       </div>
 
-      {/* Disclaimer */}
       <div className="flex items-center justify-center gap-1.5 border-t bg-secondary/50 px-4 py-1.5 text-xs text-muted-foreground">
         <Info className="h-3 w-3" />
         AI assistant — responses are for guidance only and do not constitute legal advice.
       </div>
 
-      {/* Input */}
       <div className="border-t bg-card p-4">
         <div className="mx-auto flex max-w-2xl gap-2">
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask about visa requirements..."
+            placeholder="Ask about tourist visa requirements..."
             className="min-h-[44px] max-h-32 resize-none"
             rows={1}
           />
