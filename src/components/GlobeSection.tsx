@@ -1,121 +1,196 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, Suspense, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import { OrbitControls, Html } from "@react-three/drei";
+import * as THREE from "three";
 import { supabase } from "@/integrations/supabase/client";
+import earthTexture from "@/assets/earth-texture.jpg";
 
-interface Country {
+// Approximate lat/lng for supported countries
+const COUNTRY_COORDS: Record<string, [number, number]> = {
+  AE: [24.5, 54.5],    // UAE
+  GB: [51.5, -0.1],    // UK
+  US: [39.0, -98.0],   // USA
+  CA: [56.0, -106.0],  // Canada
+  TR: [39.9, 32.9],    // Turkey
+  MY: [3.1, 101.7],    // Malaysia
+  SA: [24.7, 46.7],    // Saudi Arabia
+  DE: [51.2, 10.4],    // Germany
+  AU: [-25.3, 133.8],  // Australia
+  TH: [13.8, 100.5],   // Thailand
+  FR: [46.6, 2.2],     // France
+  IT: [41.9, 12.5],    // Italy
+  ES: [40.5, -3.7],    // Spain
+  JP: [36.2, 138.3],   // Japan
+  CN: [35.9, 104.2],   // China
+  SG: [1.3, 103.8],    // Singapore
+  QA: [25.3, 51.2],    // Qatar
+  OM: [21.5, 55.9],    // Oman
+  NL: [52.1, 5.3],     // Netherlands
+  CH: [46.8, 8.2],     // Switzerland
+};
+
+function latLngToVector3(lat: number, lng: number, radius: number): THREE.Vector3 {
+  const phi = (90 - lat) * (Math.PI / 180);
+  const theta = (lng + 180) * (Math.PI / 180);
+  return new THREE.Vector3(
+    -(radius * Math.sin(phi) * Math.cos(theta)),
+    radius * Math.cos(phi),
+    radius * Math.sin(phi) * Math.sin(theta)
+  );
+}
+
+interface CountryData {
   id: string;
   name: string;
   flag_emoji: string;
+  code: string;
+}
+
+function CountryMarker({
+  country,
+  radius,
+  onClick,
+}: {
+  country: CountryData;
+  radius: number;
+  onClick: () => void;
+}) {
+  const coords = COUNTRY_COORDS[country.code];
+  const position = useMemo(
+    () => coords ? latLngToVector3(coords[0], coords[1], radius) : null,
+    [coords, radius]
+  );
+
+  if (!position) return null;
+
+  return (
+    <group position={position}>
+      {/* Glowing dot */}
+      <mesh>
+        <sphereGeometry args={[0.025, 16, 16]} />
+        <meshBasicMaterial color="#f59e0b" />
+      </mesh>
+      {/* Pulse ring */}
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.03, 0.045, 32]} />
+        <meshBasicMaterial color="#f59e0b" transparent opacity={0.5} side={THREE.DoubleSide} />
+      </mesh>
+      {/* HTML label */}
+      <Html
+        distanceFactor={4}
+        style={{ pointerEvents: "auto", whiteSpace: "nowrap" }}
+        center
+        position={[0, 0.08, 0]}
+      >
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+          }}
+          className="flex items-center gap-1.5 rounded-full bg-card/90 border border-border/60 px-3 py-1.5 text-xs font-semibold text-foreground shadow-lg backdrop-blur-md transition-all hover:scale-110 hover:bg-primary hover:text-primary-foreground hover:border-primary cursor-pointer select-none"
+        >
+          <span className="text-base leading-none">{country.flag_emoji}</span>
+          <span>{country.name}</span>
+        </button>
+      </Html>
+    </group>
+  );
+}
+
+function Globe({ countries, onSelect }: { countries: CountryData[]; onSelect: (id: string) => void }) {
+  const meshRef = useRef<THREE.Mesh>(null);
+  const texture = useLoader(THREE.TextureLoader, earthTexture);
+
+  // Slow auto-rotate
+  useFrame((_, delta) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.y += delta * 0.08;
+    }
+  });
+
+  return (
+    <group>
+      {/* Atmosphere glow */}
+      <mesh>
+        <sphereGeometry args={[1.62, 64, 64]} />
+        <meshBasicMaterial color="#3b82f6" transparent opacity={0.07} side={THREE.BackSide} />
+      </mesh>
+
+      {/* Earth */}
+      <mesh ref={meshRef}>
+        <sphereGeometry args={[1.55, 64, 64]} />
+        <meshStandardMaterial map={texture} metalness={0.1} roughness={0.8} />
+
+        {/* Country markers as children so they rotate with globe */}
+        {countries.map((c) => (
+          <CountryMarker
+            key={c.id}
+            country={c}
+            radius={1.58}
+            onClick={() => onSelect(c.id)}
+          />
+        ))}
+      </mesh>
+    </group>
+  );
 }
 
 const GlobeSection = () => {
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [countries, setCountries] = useState<CountryData[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     supabase
       .from("countries")
-      .select("id, name, flag_emoji")
+      .select("id, name, flag_emoji, code")
       .order("name")
       .then(({ data }) => {
         if (data) setCountries(data);
       });
   }, []);
 
-  const handleClick = (countryId: string) => {
+  const handleSelect = (countryId: string) => {
     navigate(`/eligibility?country=${countryId}`);
   };
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-background via-card to-background py-16 md:py-24">
-      {/* Section header */}
-      <div className="container px-4 text-center mb-12">
+    <section className="relative bg-gradient-to-b from-background via-card to-background py-16 md:py-24 overflow-hidden">
+      <div className="container px-4 text-center mb-8">
         <h2 className="text-3xl md:text-4xl font-extrabold text-foreground mb-3">
           Pick Your Destination 🌍
         </h2>
         <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-          Tap a country to instantly check your tourist visa eligibility
+          Spin the globe & tap a country to check your visa eligibility
         </p>
       </div>
 
-      <div className="container px-4 flex flex-col lg:flex-row items-center gap-10 lg:gap-16">
-        {/* Globe visual */}
-        <div className="relative w-64 h-64 md:w-80 md:h-80 shrink-0 mx-auto lg:mx-0">
-          {/* Glow */}
-          <div className="absolute inset-0 rounded-full bg-primary/20 blur-3xl animate-pulse" />
-
-          {/* Globe sphere */}
-          <div className="relative w-full h-full rounded-full bg-gradient-to-br from-primary/80 via-primary to-primary/60 shadow-2xl overflow-hidden">
-            {/* Grid lines */}
-            <div className="absolute inset-0 rounded-full" style={{
-              background: `
-                repeating-conic-gradient(transparent 0deg, transparent 28deg, rgba(255,255,255,0.08) 28deg, rgba(255,255,255,0.08) 30deg),
-                repeating-linear-gradient(0deg, transparent 0%, transparent 18%, rgba(255,255,255,0.08) 18%, rgba(255,255,255,0.08) 20%)
-              `,
-            }} />
-            {/* Continents hint */}
-            <div className="absolute top-[18%] left-[22%] w-[28%] h-[22%] rounded-[40%] bg-white/12 rotate-[-12deg]" />
-            <div className="absolute top-[30%] right-[18%] w-[20%] h-[30%] rounded-[35%] bg-white/10 rotate-[8deg]" />
-            <div className="absolute bottom-[22%] left-[30%] w-[18%] h-[16%] rounded-[50%] bg-white/10 rotate-[-5deg]" />
-            {/* Highlight */}
-            <div className="absolute top-[10%] left-[15%] w-[35%] h-[35%] rounded-full bg-white/15 blur-xl" />
-            {/* Rotating ring */}
-            <div className="absolute inset-[-8%] rounded-full border-2 border-dashed border-white/15 animate-[spin_30s_linear_infinite]" />
-          </div>
-
-          {/* Orbiting flags (decorative) */}
-          {countries.slice(0, 6).map((c, i) => {
-            const angle = (i / 6) * 360;
-            const radius = 52;
-            return (
-              <button
-                key={c.id}
-                onClick={() => handleClick(c.id)}
-                className="absolute text-2xl md:text-3xl transition-transform duration-300 hover:scale-125 cursor-pointer z-10"
-                style={{
-                  top: `${50 + radius * Math.sin((angle * Math.PI) / 180)}%`,
-                  left: `${50 + radius * Math.cos((angle * Math.PI) / 180)}%`,
-                  transform: "translate(-50%, -50%)",
-                  animation: `spin 30s linear infinite`,
-                  animationDelay: `${-i * 5}s`,
-                }}
-                title={c.name}
-              >
-                {c.flag_emoji}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Country grid */}
-        <div className="flex-1 w-full">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {countries.map((country) => (
-              <button
-                key={country.id}
-                onClick={() => handleClick(country.id)}
-                onMouseEnter={() => setHoveredId(country.id)}
-                onMouseLeave={() => setHoveredId(null)}
-                className={`group flex items-center gap-3 rounded-xl border px-4 py-3.5 text-left transition-all duration-200 ${
-                  hoveredId === country.id
-                    ? "border-primary bg-primary/10 shadow-lg shadow-primary/10 scale-[1.03]"
-                    : "border-border/60 bg-card hover:border-primary/50 hover:shadow-md"
-                }`}
-              >
-                <span className="text-3xl leading-none">{country.flag_emoji}</span>
-                <span className="text-sm font-semibold text-foreground truncate">
-                  {country.name}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {countries.length === 0 && (
-            <div className="text-center text-muted-foreground py-12">
-              Loading destinations...
-            </div>
-          )}
+      <div className="container px-4">
+        <div className="mx-auto w-full max-w-2xl aspect-square md:aspect-[4/3]">
+          <Suspense
+            fallback={
+              <div className="flex h-full items-center justify-center text-muted-foreground">
+                Loading globe...
+              </div>
+            }
+          >
+            <Canvas
+              camera={{ position: [0, 0, 4], fov: 45 }}
+              style={{ width: "100%", height: "100%" }}
+            >
+              <ambientLight intensity={0.6} />
+              <directionalLight position={[5, 3, 5]} intensity={1} />
+              <Globe countries={countries} onSelect={handleSelect} />
+              <OrbitControls
+                enableZoom={true}
+                enablePan={false}
+                minDistance={2.5}
+                maxDistance={6}
+                autoRotate={false}
+                rotateSpeed={0.5}
+              />
+            </Canvas>
+          </Suspense>
         </div>
       </div>
     </section>
