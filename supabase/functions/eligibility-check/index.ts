@@ -44,7 +44,7 @@ Evaluate this tourist visa application and provide a detailed, profile-aware ass
 ${documents.map((d: any) => `- ${d.document_name} (${d.is_mandatory ? "Mandatory" : "Optional"}): ${d.description}`).join("\n")}
 
 **Eligibility Criteria:**
-${criteria.map((c: any) => `- ${c.criteria_name}: ${c.criteria_description}${c.min_value ? \` (Min: \${c.min_value})\` : ""} [${c.is_mandatory ? "Required" : "Recommended"}]`).join("\n")}
+${criteria.map((c: any) => `- ${c.criteria_name}: ${c.criteria_description}${c.min_value ? " (Min: " + c.min_value + ")" : ""} [${c.is_mandatory ? "Required" : "Recommended"}]`).join("\n")}
 
 SCORING INSTRUCTIONS — YOU MUST FOLLOW THIS:
 The score must heavily factor in the applicant's PROFILE TYPE and TIES to home country. Two applicants with similar finances but different profiles must get VERY different scores:
