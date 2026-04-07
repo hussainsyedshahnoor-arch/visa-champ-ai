@@ -30,11 +30,7 @@ interface UploadedFile {
 
 const REQUIRED_DOCS = [
   "Passport (front page scan)",
-  "Passport-size Photo",
-  "Bank Statement (last 6 months)",
-  "Employment Letter / Business Proof",
-  "Travel Itinerary",
-  "Hotel Booking Confirmation",
+  "CNIC (front & back)",
 ];
 
 const ApplyVisa = () => {
