@@ -154,10 +154,23 @@ const HeroSection = () => {
       <div className="container relative z-10 flex flex-1 flex-col items-center px-4">
         {/* Hero text */}
         <div className={`flex flex-col items-center text-center transition-all duration-500 ${chatActive ? "pt-8 pb-4" : "flex-1 justify-center"}`}>
-          <h1 className={`font-extrabold tracking-tight text-white animate-fade-in transition-all duration-500 ${chatActive ? "mb-2 text-2xl md:text-3xl" : "mb-6 text-4xl md:text-6xl lg:text-7xl"}`}>
-            Your visa. Sorted in{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">minutes.</span>
-          </h1>
+          <div className={`flex items-center gap-3 ${chatActive ? "w-full max-w-2xl justify-between" : "justify-center"}`}>
+            <h1 className={`font-extrabold tracking-tight text-white animate-fade-in transition-all duration-500 ${chatActive ? "mb-0 text-2xl md:text-3xl" : "mb-6 text-4xl md:text-6xl lg:text-7xl"}`}>
+              Your visa. Sorted in{" "}
+              <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">minutes.</span>
+            </h1>
+            {chatActive && (
+              <Button
+                onClick={startNewChat}
+                variant="ghost"
+                size="sm"
+                className="shrink-0 text-white/70 hover:text-white hover:bg-white/10 gap-1.5"
+              >
+                <MessageSquarePlus className="h-4 w-4" />
+                <span className="hidden sm:inline">New Chat</span>
+              </Button>
+            )}
+          </div>
 
           {!chatActive && (
             <p className="mb-10 max-w-2xl text-lg text-white/70 md:text-xl animate-fade-in" style={{ animationDelay: "0.1s" }}>
