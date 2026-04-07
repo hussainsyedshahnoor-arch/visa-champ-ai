@@ -10,6 +10,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import EligibilityCheck from "./pages/EligibilityCheck";
 import AdminDashboard from "./pages/AdminDashboard";
+import ApplyVisa from "./pages/ApplyVisa";
+import MyApplications from "./pages/MyApplications";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +29,8 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/eligibility" element={<EligibilityCheck />} />
+            <Route path="/apply" element={<ApplyVisa />} />
+            <Route path="/applications" element={<MyApplications />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
