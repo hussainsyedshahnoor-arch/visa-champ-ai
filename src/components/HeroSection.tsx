@@ -214,6 +214,11 @@ const HeroSection = () => {
         isLoggedIn={!!user}
       />
 
+      <SignupGateModal
+        open={showSignupGate || showGate}
+        onDismiss={() => { setShowSignupGate(false); dismissGate(); }}
+      />
+
       <section className="relative flex min-h-[90vh] flex-col overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 -z-10">
