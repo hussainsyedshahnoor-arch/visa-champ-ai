@@ -73,6 +73,86 @@ export type Database = {
         }
         Relationships: []
       }
+      countries: {
+        Row: {
+          code: string
+          created_at: string
+          flag_emoji: string
+          id: string
+          name: string
+          notes: string | null
+          region: string
+          updated_at: string
+          visa_required: boolean
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          flag_emoji?: string
+          id?: string
+          name: string
+          notes?: string | null
+          region?: string
+          updated_at?: string
+          visa_required?: boolean
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          flag_emoji?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          region?: string
+          updated_at?: string
+          visa_required?: boolean
+        }
+        Relationships: []
+      }
+      eligibility_checks: {
+        Row: {
+          ai_analysis: string | null
+          created_at: string
+          form_data: Json
+          id: string
+          result: string | null
+          score: number | null
+          status: string
+          user_id: string | null
+          visa_type_id: string
+        }
+        Insert: {
+          ai_analysis?: string | null
+          created_at?: string
+          form_data?: Json
+          id?: string
+          result?: string | null
+          score?: number | null
+          status?: string
+          user_id?: string | null
+          visa_type_id: string
+        }
+        Update: {
+          ai_analysis?: string | null
+          created_at?: string
+          form_data?: Json
+          id?: string
+          result?: string | null
+          score?: number | null
+          status?: string
+          user_id?: string | null
+          visa_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "eligibility_checks_visa_type_id_fkey"
+            columns: ["visa_type_id"]
+            isOneToOne: false
+            referencedRelation: "visa_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       guest_sessions: {
         Row: {
           created_at: string
@@ -97,18 +177,178 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      visa_eligibility_criteria: {
+        Row: {
+          created_at: string
+          criteria_description: string | null
+          criteria_name: string
+          criteria_type: string
+          id: string
+          is_mandatory: boolean
+          max_value: string | null
+          min_value: string | null
+          sort_order: number
+          visa_type_id: string
+        }
+        Insert: {
+          created_at?: string
+          criteria_description?: string | null
+          criteria_name: string
+          criteria_type?: string
+          id?: string
+          is_mandatory?: boolean
+          max_value?: string | null
+          min_value?: string | null
+          sort_order?: number
+          visa_type_id: string
+        }
+        Update: {
+          created_at?: string
+          criteria_description?: string | null
+          criteria_name?: string
+          criteria_type?: string
+          id?: string
+          is_mandatory?: boolean
+          max_value?: string | null
+          min_value?: string | null
+          sort_order?: number
+          visa_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visa_eligibility_criteria_visa_type_id_fkey"
+            columns: ["visa_type_id"]
+            isOneToOne: false
+            referencedRelation: "visa_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visa_required_documents: {
+        Row: {
+          created_at: string
+          description: string | null
+          document_name: string
+          id: string
+          is_mandatory: boolean
+          sort_order: number
+          visa_type_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          document_name: string
+          id?: string
+          is_mandatory?: boolean
+          sort_order?: number
+          visa_type_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          document_name?: string
+          id?: string
+          is_mandatory?: boolean
+          sort_order?: number
+          visa_type_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visa_required_documents_visa_type_id_fkey"
+            columns: ["visa_type_id"]
+            isOneToOne: false
+            referencedRelation: "visa_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      visa_types: {
+        Row: {
+          country_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          processing_days_max: number | null
+          processing_days_min: number | null
+          stay_days: number | null
+          updated_at: string
+          validity_days: number | null
+        }
+        Insert: {
+          country_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          processing_days_max?: number | null
+          processing_days_min?: number | null
+          stay_days?: number | null
+          updated_at?: string
+          validity_days?: number | null
+        }
+        Update: {
+          country_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          processing_days_max?: number | null
+          processing_days_min?: number | null
+          stay_days?: number | null
+          updated_at?: string
+          validity_days?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visa_types_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       migrate_guest_to_user: {
         Args: { _guest_id: string; _user_id: string }
         Returns: undefined
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "moderator" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -235,6 +475,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "moderator", "user"],
+    },
   },
 } as const
