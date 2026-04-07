@@ -23,14 +23,14 @@ const Login = () => {
     if (error) {
       toast({ title: "Login failed", description: error.message, variant: "destructive" });
     } else {
-      navigate("/chat");
+      navigate("/");
     }
   };
 
   const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/chat` },
+      options: { redirectTo: `${window.location.origin}/` },
     });
   };
 

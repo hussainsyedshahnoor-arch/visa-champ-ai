@@ -9,7 +9,9 @@ import { streamChat, type Msg } from "@/lib/chat-stream";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useChatHistory } from "@/hooks/use-chat-history";
+import { useGuestSession } from "@/hooks/use-guest-session";
 import ChatHistorySidebar from "@/components/ChatHistorySidebar";
+import SignupGateModal from "@/components/SignupGateModal";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const SUGGESTED_PROMPTS = [
@@ -26,11 +28,13 @@ const HeroSection = () => {
   const [hasResponse, setHasResponse] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showSignupGate, setShowSignupGate] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const sessionIdRef = useRef<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { guestId, isAtCap, showGate, incrementCount, dismissGate, migrateToUser } = useGuestSession();
 
   const {
     sessions,
@@ -41,7 +45,14 @@ const HeroSection = () => {
     loadSession,
     deleteSession,
     clearActive,
-  } = useChatHistory(user?.id);
+  } = useChatHistory(user?.id, guestId);
+
+  // Migrate guest data when user logs in
+  useEffect(() => {
+    if (user && guestId) {
+      migrateToUser(user.id).then(() => fetchSessions());
+    }
+  }, [user?.id]);
 
   const chatActive = messages.length > 0;
 
@@ -55,6 +66,12 @@ const HeroSection = () => {
     const trimmed = text.trim();
     if (!trimmed || isLoading) return;
 
+    // Guest cap check
+    if (!user && isAtCap) {
+      setShowSignupGate(true);
+      return;
+    }
+
     const userMsg: Msg = { role: "user", content: trimmed };
     setMessages((prev) => [...prev, userMsg]);
     setQuery("");
@@ -62,8 +79,8 @@ const HeroSection = () => {
     setHasResponse(false);
     scrollToBottom();
 
-    // Create session on first message if logged in
-    if (!sessionIdRef.current && user) {
+    // Create session on first message
+    if (!sessionIdRef.current) {
       const newId = await createSession(trimmed);
       sessionIdRef.current = newId;
     }
@@ -71,6 +88,11 @@ const HeroSection = () => {
     // Save user message
     if (sessionIdRef.current) {
       await saveMessage(sessionIdRef.current, userMsg);
+    }
+
+    // Increment guest count
+    if (!user) {
+      await incrementCount();
     }
 
     let assistantContent = "";
@@ -190,6 +212,11 @@ const HeroSection = () => {
         onDeleteSession={deleteSession}
         onFetch={fetchSessions}
         isLoggedIn={!!user}
+      />
+
+      <SignupGateModal
+        open={showSignupGate || showGate}
+        onDismiss={() => { setShowSignupGate(false); dismissGate(); }}
       />
 
       <section className="relative flex min-h-[90vh] flex-col overflow-hidden">

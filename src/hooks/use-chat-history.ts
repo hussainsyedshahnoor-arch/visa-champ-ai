@@ -9,7 +9,7 @@ export interface ChatSession {
   updated_at: string;
 }
 
-export function useChatHistory(userId: string | undefined) {
+export function useChatHistory(userId: string | undefined, guestId?: string) {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [loadingSessions, setLoadingSessions] = useState(false);
@@ -20,6 +20,7 @@ export function useChatHistory(userId: string | undefined) {
     const { data } = await supabase
       .from("chat_sessions")
       .select("id, title, created_at, updated_at")
+      .eq("user_id", userId)
       .order("updated_at", { ascending: false })
       .limit(50);
     setSessions((data as ChatSession[]) ?? []);
@@ -27,28 +28,37 @@ export function useChatHistory(userId: string | undefined) {
   }, [userId]);
 
   const createSession = useCallback(async (firstMessage: string): Promise<string | null> => {
-    if (!userId) return null;
     const title = firstMessage.length > 40 ? firstMessage.slice(0, 40) + "…" : firstMessage;
+
+    const insertData: Record<string, any> = { title };
+    if (userId) {
+      insertData.user_id = userId;
+    } else if (guestId) {
+      insertData.guest_id = guestId;
+    } else {
+      return null;
+    }
+
     const { data, error } = await supabase
       .from("chat_sessions")
-      .insert({ user_id: userId, title })
+      .insert(insertData as any)
       .select("id")
       .single();
     if (error || !data) return null;
+
     const newSession = { id: data.id, title, created_at: new Date().toISOString(), updated_at: new Date().toISOString() };
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(data.id);
     return data.id;
-  }, [userId]);
+  }, [userId, guestId]);
 
   const saveMessage = useCallback(async (sessionId: string, msg: Msg) => {
-    if (!userId) return;
     await supabase.from("chat_messages").insert({
       session_id: sessionId,
       role: msg.role,
       content: msg.content,
     });
-  }, [userId]);
+  }, []);
 
   const loadSession = useCallback(async (sessionId: string): Promise<Msg[]> => {
     const { data } = await supabase
