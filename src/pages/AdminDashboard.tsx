@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Globe, ArrowLeft, Plus, Trash2, Edit2, Save, X, Shield } from "lucide-react";
+import { Globe, ArrowLeft, Plus, Trash2, Edit2, Save, X, Shield, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import ThemeToggle from "@/components/ThemeToggle";
+import ApplicationsTab from "@/components/admin/ApplicationsTab";
 
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -183,11 +184,17 @@ const AdminDashboard = () => {
       </header>
 
       <div className="container py-6 px-4">
-        <Tabs defaultValue="countries">
+        <Tabs defaultValue="applications">
           <TabsList className="mb-6">
+            <TabsTrigger value="applications" className="gap-1.5"><ClipboardList className="h-4 w-4" /> Applications</TabsTrigger>
             <TabsTrigger value="countries">Countries</TabsTrigger>
             <TabsTrigger value="visa-details" disabled={!selectedCountry}>Visa Types & Details</TabsTrigger>
           </TabsList>
+
+          {/* Applications Tab */}
+          <TabsContent value="applications">
+            <ApplicationsTab />
+          </TabsContent>
 
           {/* Countries Tab */}
           <TabsContent value="countries">
