@@ -49,6 +49,13 @@ const EligibilityCheck = () => {
     ownsProperty: false,
     maritalStatus: "",
     purposeOfVisit: "",
+    travellingWith: "",
+    numberOfDependents: "",
+    hasOtherNationality: false,
+    otherNationality: "",
+    hasOtherResidency: false,
+    otherResidencyCountry: "",
+    hasReturnTies: "",
   });
 
   useEffect(() => {
