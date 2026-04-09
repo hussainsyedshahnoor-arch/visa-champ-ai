@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import ThemeToggle from "@/components/ThemeToggle";
+import SignupGateModal from "@/components/SignupGateModal";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Country {
   id: string;
@@ -32,7 +34,9 @@ interface VisaType {
 const EligibilityCheck = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
+  const [showSignupGate, setShowSignupGate] = useState(false);
   const [countries, setCountries] = useState<Country[]>([]);
   const [visaTypes, setVisaTypes] = useState<VisaType[]>([]);
   const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "");
@@ -40,6 +44,14 @@ const EligibilityCheck = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<{ analysis: string; score: number | null } | null>(null);
   const { toast } = useToast();
+
+  const handleNextToReview = () => {
+    if (!user) {
+      setShowSignupGate(true);
+      return;
+    }
+    setStep(3);
+  };
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -336,7 +348,7 @@ const EligibilityCheck = () => {
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1">← Back</Button>
                 <Button
-                  onClick={() => setStep(3)}
+                  onClick={handleNextToReview}
                   disabled={!formData.fullName || !formData.employmentStatus || !formData.bankBalance}
                   className="flex-1"
                 >
@@ -434,6 +446,7 @@ const EligibilityCheck = () => {
           </div>
         )}
       </div>
+      <SignupGateModal open={showSignupGate} onDismiss={() => setShowSignupGate(false)} />
     </div>
   );
 };
