@@ -446,7 +446,7 @@ const EligibilityCheck = () => {
           </div>
         )}
       </div>
-      <SignupGateModal open={showSignupGate} onOpenChange={setShowSignupGate} />
+      <SignupGateModal open={showSignupGate} onDismiss={() => setShowSignupGate(false)} />
     </div>
   );
 };
