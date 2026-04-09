@@ -95,6 +95,7 @@ const Login = () => {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
               <ForgotPasswordLink />
+            </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Logging in..." : "Log in"}
             </Button>
