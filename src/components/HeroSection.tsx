@@ -367,7 +367,7 @@ const HeroSection = () => {
               {/* Decorative dots */}
               <div className="absolute top-16 left-20 w-16 h-16 rounded-full bg-primary/20" />
               <div className="absolute bottom-20 right-8 w-10 h-10 rounded-full bg-accent/20" />
-
+            </div>
         </div>
       </section>
     </>
