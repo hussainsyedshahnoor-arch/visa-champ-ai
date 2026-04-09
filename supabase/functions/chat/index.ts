@@ -70,8 +70,9 @@ serve(async (req) => {
 
     // Try to enrich system prompt with user profile
     let systemPrompt = SYSTEM_PROMPT;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (authHeader && supabaseUrl && serviceKey) {
+    if (authHeader?.startsWith("Bearer ") && supabaseUrl && serviceKey) {
       try {
         const sb = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
         const token = authHeader.replace("Bearer ", "");
