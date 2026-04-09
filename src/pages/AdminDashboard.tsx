@@ -48,17 +48,95 @@ const AdminDashboard = () => {
   const [showAddDoc, setShowAddDoc] = useState(false);
   const [showAddCriteria, setShowAddCriteria] = useState(false);
 
-  // Check admin role
+  const resolveAdminAccess = useCallback(async (userId: string) => {
+    const { data: roleFromRpc, error: rpcError } = await supabase.rpc("has_role", {
+      _user_id: userId,
+      _role: "admin",
+    });
+
+    if (!rpcError && roleFromRpc) {
+      return true;
+    }
+
+    const { data: directRoleRows, error: rolesError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .eq("role", "admin")
+      .limit(1);
+
+    if (rolesError) {
+      console.error("Admin access lookup failed", { rpcError, rolesError });
+      return false;
+    }
+
+    return (directRoleRows?.length ?? 0) > 0;
+  }, []);
+
+  const checkAdminAccess = useCallback(
+    async ({ showLoading = false, showToast = false }: { showLoading?: boolean; showToast?: boolean } = {}) => {
+      if (!user) return false;
+      if (showLoading) setChecking(true);
+
+      try {
+        const hasAccess = await resolveAdminAccess(user.id);
+        setIsAdmin(hasAccess);
+
+        if (!hasAccess && showToast) {
+          toast({
+            title: "Access Denied",
+            description: "Your admin access may still be syncing. Click retry or refresh the page.",
+            variant: "destructive",
+          });
+        }
+
+        return hasAccess;
+      } catch (error) {
+        console.error("Unable to verify admin access", error);
+        setIsAdmin(false);
+
+        if (showToast) {
+          toast({
+            title: "Unable to verify access",
+            description: "Please refresh the page and try again.",
+            variant: "destructive",
+          });
+        }
+
+        return false;
+      } finally {
+        if (showLoading) setChecking(false);
+      }
+    },
+    [resolveAdminAccess, toast, user]
+  );
+
   useEffect(() => {
     if (authLoading) return;
-    if (!user) { navigate("/login"); return; }
+    if (!user) {
+      navigate("/login", { replace: true });
+      return;
+    }
 
-    supabase.rpc("has_role", { _user_id: user.id, _role: "admin" }).then(({ data }) => {
-      setIsAdmin(!!data);
-      setChecking(false);
-      if (!data) toast({ title: "Access Denied", description: "You need admin privileges.", variant: "destructive" });
-    });
-  }, [user, authLoading, navigate]);
+    void checkAdminAccess({ showLoading: true, showToast: true });
+  }, [authLoading, checkAdminAccess, navigate, user]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const refreshAccess = () => {
+      if (document.visibilityState === "hidden") return;
+      void checkAdminAccess();
+    };
+
+    window.addEventListener("focus", refreshAccess);
+    document.addEventListener("visibilitychange", refreshAccess);
+
+    return () => {
+      window.removeEventListener("focus", refreshAccess);
+      document.removeEventListener("visibilitychange", refreshAccess);
+    };
+  }, [checkAdminAccess, user]);
 
   const fetchCountries = useCallback(async () => {
     const { data } = await supabase.from("countries").select("*").order("name");
@@ -169,11 +247,14 @@ const AdminDashboard = () => {
 
   if (!isAdmin) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-background gap-4">
+      <div className="flex h-screen flex-col items-center justify-center bg-background gap-4 px-4 text-center">
         <Shield className="h-16 w-16 text-destructive" />
         <h1 className="text-2xl font-bold text-foreground">Access Denied</h1>
-        <p className="text-muted-foreground">You need admin privileges to access this page.</p>
-        <Button asChild><Link to="/">Go Home</Link></Button>
+        <p className="max-w-md text-muted-foreground">You need admin privileges to access this page. If you were just promoted, click retry or refresh this page.</p>
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <Button onClick={() => void checkAdminAccess({ showLoading: true, showToast: true })}>Retry Access</Button>
+          <Button variant="outline" asChild><Link to="/">Go Home</Link></Button>
+        </div>
       </div>
     );
   }
