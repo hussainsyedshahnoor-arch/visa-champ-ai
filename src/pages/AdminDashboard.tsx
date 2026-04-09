@@ -187,15 +187,24 @@ const AdminDashboard = () => {
 
       <div className="container py-6 px-4">
         <Tabs defaultValue="applications">
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex-wrap">
             <TabsTrigger value="applications" className="gap-1.5"><ClipboardList className="h-4 w-4" /> Applications</TabsTrigger>
+            <TabsTrigger value="messages" className="gap-1.5"><MessageSquare className="h-4 w-4" /> Messages</TabsTrigger>
+            <TabsTrigger value="bookings" className="gap-1.5"><Calendar className="h-4 w-4" /> Bookings</TabsTrigger>
             <TabsTrigger value="countries">Countries</TabsTrigger>
             <TabsTrigger value="visa-details" disabled={!selectedCountry}>Visa Types & Details</TabsTrigger>
           </TabsList>
 
-          {/* Applications Tab */}
           <TabsContent value="applications">
             <ApplicationsTab />
+          </TabsContent>
+
+          <TabsContent value="messages">
+            <MessagesTab />
+          </TabsContent>
+
+          <TabsContent value="bookings">
+            <BookingsTab />
           </TabsContent>
 
           {/* Countries Tab */}
