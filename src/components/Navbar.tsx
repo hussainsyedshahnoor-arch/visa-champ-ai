@@ -29,6 +29,7 @@ const Navbar = () => {
         <div className="hidden items-center gap-2 md:flex">
           <ThemeToggle />
           <NotificationBell />
+          <Button variant="ghost" size="sm" asChild><Link to="/profile">Profile</Link></Button>
           <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
           <Button asChild><Link to="/signup">Sign up free</Link></Button>
         </div>
@@ -50,6 +51,7 @@ const Navbar = () => {
             <Link to="/applications" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>My Applications</Link>
             <Link to="/documents" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Documents</Link>
             <a href="#features" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Features</a>
+            <Link to="/profile" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Profile</Link>
             <hr />
             <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
             <Button asChild><Link to="/signup">Sign up free</Link></Button>
