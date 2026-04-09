@@ -12,6 +12,7 @@ import EligibilityCheck from "./pages/EligibilityCheck";
 import AdminDashboard from "./pages/AdminDashboard";
 import ApplyVisa from "./pages/ApplyVisa";
 import MyApplications from "./pages/MyApplications";
+import BookCall from "./pages/BookCall";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
