@@ -147,7 +147,7 @@ const HeroSection = () => {
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
     if ((!trimmed && attachments.length === 0) || isLoading) return;
-    if (!user && isAtCap) { setShowSignupGate(true); return; }
+    if (!user) { setShowSignupGate(true); return; }
 
     // Upload attachments first
     let attachmentUrls: string[] = [];
