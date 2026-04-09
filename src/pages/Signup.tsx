@@ -27,8 +27,8 @@ const Signup = () => {
     if (error) {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Check your email", description: "We sent you a confirmation link." });
-      navigate("/");
+      toast({ title: "Welcome to Visa Champion!", description: "Your account is ready." });
+      navigate("/dashboard");
     }
   };
 
