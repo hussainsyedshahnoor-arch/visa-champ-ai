@@ -42,6 +42,7 @@ const Signup = () => {
   const handleGoogleSignup = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}/dashboard`,
+      extraParams: { prompt: "select_account" },
     });
     if (result.error) {
       toast({ title: "Google signup failed", description: String(result.error), variant: "destructive" });

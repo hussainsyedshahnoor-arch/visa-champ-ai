@@ -55,13 +55,36 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [autoLoginAttempted, setAutoLoginAttempted] = useState(false);
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
 
+  // If already signed in, go to dashboard
   useEffect(() => {
     if (user) navigate("/dashboard", { replace: true });
   }, [user, navigate]);
+
+  // Auto-detect existing Google session (silent sign-in like Canva)
+  useEffect(() => {
+    if (authLoading || user || autoLoginAttempted) return;
+    setAutoLoginAttempted(true);
+
+    const trySilentGoogleLogin = async () => {
+      try {
+        const result = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: `${window.location.origin}/dashboard`,
+          extraParams: { prompt: "none" },
+        });
+        if (result.redirected) return;
+        if (!result.error) navigate("/dashboard", { replace: true });
+      } catch {
+        // Silent login not possible — show normal login form
+      }
+    };
+
+    trySilentGoogleLogin();
+  }, [authLoading, user, autoLoginAttempted, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,6 +101,7 @@ const Login = () => {
   const handleGoogleLogin = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: `${window.location.origin}/dashboard`,
+      extraParams: { prompt: "select_account" },
     });
     if (result.error) {
       toast({ title: "Google login failed", description: String(result.error), variant: "destructive" });
