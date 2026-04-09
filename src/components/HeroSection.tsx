@@ -350,7 +350,7 @@ const HeroSection = () => {
           </div>
 
           {/* ── Right: Decorative bubble images ── */}
-          {!chatActive && (
+          
             <div className="hidden lg:flex flex-1 items-center justify-center relative" style={{ minHeight: 480 }}>
               {/* Large top-right circle */}
               <div className="absolute top-0 right-0 w-72 h-72 rounded-full overflow-hidden shadow-2xl">
@@ -368,7 +368,6 @@ const HeroSection = () => {
               <div className="absolute top-16 left-20 w-16 h-16 rounded-full bg-primary/20" />
               <div className="absolute bottom-20 right-8 w-10 h-10 rounded-full bg-accent/20" />
             </div>
-          )}
         </div>
       </section>
     </>
