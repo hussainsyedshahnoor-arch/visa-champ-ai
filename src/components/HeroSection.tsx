@@ -165,7 +165,7 @@ const HeroSection = () => {
       content = content ? `${content}\n\n${attachmentText}` : attachmentText;
     }
 
-    const userMsg: Msg = { role: "user", content: trimmed };
+    const userMsg: Msg = { role: "user", content };
     setMessages((prev) => [...prev, userMsg]);
     setQuery("");
     setIsLoading(true);
