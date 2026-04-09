@@ -77,6 +77,7 @@ const HeroSection = () => {
   const [isListening, setIsListening] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSignupGate, setShowSignupGate] = useState(false);
+  const [guestMsgCount, setGuestMsgCount] = useState(0);
   const [attachments, setAttachments] = useState<{ file: File; preview: string; url?: string }[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
