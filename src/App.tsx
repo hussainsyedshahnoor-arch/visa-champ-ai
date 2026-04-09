@@ -17,6 +17,7 @@ import DocumentVault from "./pages/DocumentVault";
 import Profile from "./pages/Profile";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
+import ApplicationDetail from "./pages/ApplicationDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/eligibility" element={<EligibilityCheck />} />
             <Route path="/apply" element={<ApplyVisa />} />
             <Route path="/applications" element={<MyApplications />} />
+            <Route path="/applications/:id" element={<ApplicationDetail />} />
             <Route path="/book-call" element={<BookCall />} />
             <Route path="/documents" element={<DocumentVault />} />
             <Route path="/profile" element={<Profile />} />
