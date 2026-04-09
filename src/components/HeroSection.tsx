@@ -313,7 +313,22 @@ const HeroSection = () => {
                           isUser ? "bg-primary text-primary-foreground rounded-tr-md" : "bg-muted text-foreground rounded-tl-md"
                         }`}>
                           {isUser ? (
-                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                            <>
+                              {/* Render inline images from attachments */}
+                              {msg.content.match(/\[Attachment\]\((https?:\/\/[^\)]+)\)/g)?.map((match, j) => {
+                                const url = match.match(/\((https?:\/\/[^\)]+)\)/)?.[1];
+                                if (!url) return null;
+                                const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+                                return isImage ? (
+                                  <img key={j} src={url} alt="attachment" className="rounded-lg max-w-full max-h-40 mb-2" />
+                                ) : (
+                                  <a key={j} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs underline mb-1">
+                                    <FileText className="h-3 w-3" /> Attachment
+                                  </a>
+                                );
+                              })}
+                              <p className="whitespace-pre-wrap">{msg.content.replace(/\n?\n?\[Attachment\]\(https?:\/\/[^\)]+\)/g, "").trim()}</p>
+                            </>
                           ) : (
                             <div className="prose prose-sm max-w-none dark:prose-invert">
                               <ReactMarkdown>{msg.content}</ReactMarkdown>
