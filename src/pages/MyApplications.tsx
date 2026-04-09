@@ -88,7 +88,7 @@ const MyApplications = () => {
                       {status.label}
                     </Badge>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
