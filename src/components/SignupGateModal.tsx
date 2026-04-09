@@ -29,7 +29,7 @@ const SignupGateModal = ({ open, onDismiss, remainingMessages = 0 }: Props) => {
               You're on a roll! 🎉
             </h2>
             <p className="mb-6 text-sm text-muted-foreground">
-              Create a free account to continue chatting with Visa Champ and save your conversation history.
+              Create a free account to continue chatting with Visa Champion and save your conversation history.
             </p>
 
             {/* Benefits */}

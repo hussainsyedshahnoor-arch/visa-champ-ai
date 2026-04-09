@@ -7,7 +7,7 @@ const Footer = () => (
       <div className="grid gap-8 md:grid-cols-4">
         <div>
           <Link to="/" className="flex items-center gap-2 text-lg font-bold text-primary mb-3">
-            <Globe className="h-5 w-5" /> Visa Champ
+            <Globe className="h-5 w-5" /> Visa Champion
           </Link>
           <p className="text-sm text-muted-foreground">Your AI-powered visa consultant. Get expert guidance from questions to application.</p>
         </div>
@@ -36,7 +36,7 @@ const Footer = () => (
         </div>
       </div>
       <div className="mt-10 border-t pt-6 text-center text-xs text-muted-foreground">
-        <p>© {new Date().getFullYear()} Visa Champ. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Visa Champion. All rights reserved.</p>
         <p className="mt-1">This platform provides AI-generated guidance only and does not constitute legal advice.</p>
       </div>
     </div>

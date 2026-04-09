@@ -80,7 +80,7 @@ const Login = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Link to="/" className="mx-auto mb-4 flex items-center gap-2 text-xl font-bold text-primary">
-            <Globe className="h-6 w-6" /> Visa Champ
+            <Globe className="h-6 w-6" /> Visa Champion
           </Link>
           <CardTitle>Welcome back</CardTitle>
           <CardDescription>Log in to continue your visa consultation</CardDescription>

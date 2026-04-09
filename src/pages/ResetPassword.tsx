@@ -60,7 +60,7 @@ const ResetPassword = () => {
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <Link to="/" className="mx-auto mb-4 flex items-center gap-2 text-xl font-bold text-primary">
-              <Globe className="h-6 w-6" /> Visa Champ
+              <Globe className="h-6 w-6" /> Visa Champion
             </Link>
             <CardTitle>Invalid Link</CardTitle>
             <CardDescription>This password reset link is invalid or has expired.</CardDescription>
@@ -78,7 +78,7 @@ const ResetPassword = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Link to="/" className="mx-auto mb-4 flex items-center gap-2 text-xl font-bold text-primary">
-            <Globe className="h-6 w-6" /> Visa Champ
+            <Globe className="h-6 w-6" /> Visa Champion
           </Link>
           <CardTitle className="flex items-center justify-center gap-2">
             <Lock className="h-5 w-5" /> Set New Password

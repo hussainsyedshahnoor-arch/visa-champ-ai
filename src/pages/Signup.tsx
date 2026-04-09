@@ -44,7 +44,7 @@ const Signup = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Link to="/" className="mx-auto mb-4 flex items-center gap-2 text-xl font-bold text-primary">
-            <Globe className="h-6 w-6" /> Visa Champ
+            <Globe className="h-6 w-6" /> Visa Champion
           </Link>
           <CardTitle>Create your account</CardTitle>
           <CardDescription>Start your visa consultation — it's free</CardDescription>
