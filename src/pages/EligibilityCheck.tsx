@@ -34,7 +34,9 @@ interface VisaType {
 const EligibilityCheck = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
+  const [showSignupGate, setShowSignupGate] = useState(false);
   const [countries, setCountries] = useState<Country[]>([]);
   const [visaTypes, setVisaTypes] = useState<VisaType[]>([]);
   const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "");
@@ -42,6 +44,14 @@ const EligibilityCheck = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<{ analysis: string; score: number | null } | null>(null);
   const { toast } = useToast();
+
+  const handleNextToReview = () => {
+    if (!user) {
+      setShowSignupGate(true);
+      return;
+    }
+    setStep(3);
+  };
 
   const [formData, setFormData] = useState({
     fullName: "",
