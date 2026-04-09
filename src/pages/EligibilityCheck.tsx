@@ -348,7 +348,7 @@ const EligibilityCheck = () => {
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1">← Back</Button>
                 <Button
-                  onClick={() => setStep(3)}
+                  onClick={handleNextToReview}
                   disabled={!formData.fullName || !formData.employmentStatus || !formData.bankBalance}
                   className="flex-1"
                 >
