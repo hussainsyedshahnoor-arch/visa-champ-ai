@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Globe, ArrowLeft, Plus, Trash2, Edit2, Save, X, Shield, ClipboardList } from "lucide-react";
+import { Globe, ArrowLeft, Plus, Trash2, Edit2, Save, X, Shield, ClipboardList, MessageSquare, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,8 @@ import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import ThemeToggle from "@/components/ThemeToggle";
 import ApplicationsTab from "@/components/admin/ApplicationsTab";
+import MessagesTab from "@/components/admin/MessagesTab";
+import BookingsTab from "@/components/admin/BookingsTab";
 
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -185,15 +187,24 @@ const AdminDashboard = () => {
 
       <div className="container py-6 px-4">
         <Tabs defaultValue="applications">
-          <TabsList className="mb-6">
+          <TabsList className="mb-6 flex-wrap">
             <TabsTrigger value="applications" className="gap-1.5"><ClipboardList className="h-4 w-4" /> Applications</TabsTrigger>
+            <TabsTrigger value="messages" className="gap-1.5"><MessageSquare className="h-4 w-4" /> Messages</TabsTrigger>
+            <TabsTrigger value="bookings" className="gap-1.5"><Calendar className="h-4 w-4" /> Bookings</TabsTrigger>
             <TabsTrigger value="countries">Countries</TabsTrigger>
             <TabsTrigger value="visa-details" disabled={!selectedCountry}>Visa Types & Details</TabsTrigger>
           </TabsList>
 
-          {/* Applications Tab */}
           <TabsContent value="applications">
             <ApplicationsTab />
+          </TabsContent>
+
+          <TabsContent value="messages">
+            <MessagesTab />
+          </TabsContent>
+
+          <TabsContent value="bookings">
+            <BookingsTab />
           </TabsContent>
 
           {/* Countries Tab */}
