@@ -11,6 +11,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import ThemeToggle from "@/components/ThemeToggle";
+import SignupGateModal from "@/components/SignupGateModal";
+import { useAuth } from "@/hooks/use-auth";
 
 interface Country {
   id: string;
