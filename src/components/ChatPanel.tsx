@@ -93,7 +93,7 @@ const ChatPanel = ({ initialPrompt, onClose }: ChatPanelProps) => {
               <Globe className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-sm font-semibold">Visa Champ</h3>
+              <h3 className="text-sm font-semibold">Visa Champion</h3>
               <p className="text-xs text-muted-foreground">Tourist Visa Consultant</p>
             </div>
           </div>

@@ -202,7 +202,7 @@ const Chat = () => {
           <div className="flex items-center justify-between border-b px-4 py-3">
             <Link to="/" className="flex items-center gap-2 text-lg font-bold text-primary">
               <Globe className="h-5 w-5" />
-              Visa Champ
+              Visa Champion
             </Link>
             <ThemeToggle />
           </div>
@@ -288,7 +288,7 @@ const Chat = () => {
               <Globe className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-sm font-semibold text-foreground">Visa Champ</h1>
+              <h1 className="text-sm font-semibold text-foreground">Visa Champion</h1>
               <p className="text-xs text-muted-foreground">Tourist Visa Consultant for Pakistan</p>
             </div>
           </div>
