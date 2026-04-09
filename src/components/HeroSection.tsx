@@ -148,7 +148,15 @@ const HeroSection = () => {
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
     if ((!trimmed && attachments.length === 0) || isLoading) return;
-    if (!user) { setShowSignupGate(true); return; }
+
+    // Allow 2 free messages for guests, then require login
+    if (!user) {
+      if (guestMsgCount >= 2) {
+        setShowSignupGate(true);
+        return;
+      }
+      setGuestMsgCount((c) => c + 1);
+    }
 
     // Upload attachments first
     let attachmentUrls: string[] = [];
