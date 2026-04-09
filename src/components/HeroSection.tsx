@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Send, Mic, MicOff, FileText, Phone, MessageSquarePlus, History, ArrowDown } from "lucide-react";
+import { Send, Mic, MicOff, FileText, Phone, MessageSquarePlus, History, ArrowDown, Paperclip, X, Image as ImageIcon } from "lucide-react";
 import { Globe } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,7 @@ import { useChatHistory } from "@/hooks/use-chat-history";
 import { useGuestSession } from "@/hooks/use-guest-session";
 import ChatHistorySidebar from "@/components/ChatHistorySidebar";
 import SignupGateModal from "@/components/SignupGateModal";
+import { supabase } from "@/integrations/supabase/client";
 import heroBeach1 from "@/assets/hero-beach-1.jpg";
 import heroBeach2 from "@/assets/hero-beach-2.jpg";
 import heroCity from "@/assets/hero-city.jpg";
@@ -76,6 +77,9 @@ const HeroSection = () => {
   const [isListening, setIsListening] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSignupGate, setShowSignupGate] = useState(false);
+  const [attachments, setAttachments] = useState<{ file: File; preview: string; url?: string }[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const sessionIdRef = useRef<string | null>(null);
@@ -109,12 +113,59 @@ const HeroSection = () => {
     }, 50);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newAttachments = files.map((file) => ({
+      file,
+      preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : "",
+    }));
+    setAttachments((prev) => [...prev, ...newAttachments].slice(0, 5));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeAttachment = (idx: number) => {
+    setAttachments((prev) => {
+      const a = prev[idx];
+      if (a.preview) URL.revokeObjectURL(a.preview);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  const uploadAttachments = async (): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const att of attachments) {
+      const ext = att.file.name.split(".").pop() || "bin";
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("chat-attachments").upload(path, att.file);
+      if (error) { toast({ title: "Upload failed", description: error.message, variant: "destructive" }); continue; }
+      const { data: urlData } = supabase.storage.from("chat-attachments").getPublicUrl(path);
+      urls.push(urlData.publicUrl);
+    }
+    return urls;
+  };
+
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || isLoading) return;
+    if ((!trimmed && attachments.length === 0) || isLoading) return;
     if (!user && isAtCap) { setShowSignupGate(true); return; }
 
-    const userMsg: Msg = { role: "user", content: trimmed };
+    // Upload attachments first
+    let attachmentUrls: string[] = [];
+    if (attachments.length > 0) {
+      setUploading(true);
+      attachmentUrls = await uploadAttachments();
+      setAttachments([]);
+      setUploading(false);
+    }
+
+    // Build message content with attachments
+    let content = trimmed;
+    if (attachmentUrls.length > 0) {
+      const attachmentText = attachmentUrls.map((url) => `[Attachment](${url})`).join("\n");
+      content = content ? `${content}\n\n${attachmentText}` : attachmentText;
+    }
+
+    const userMsg: Msg = { role: "user", content };
     setMessages((prev) => [...prev, userMsg]);
     setQuery("");
     setIsLoading(true);
@@ -262,7 +313,22 @@ const HeroSection = () => {
                           isUser ? "bg-primary text-primary-foreground rounded-tr-md" : "bg-muted text-foreground rounded-tl-md"
                         }`}>
                           {isUser ? (
-                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                            <>
+                              {/* Render inline images from attachments */}
+                              {msg.content.match(/\[Attachment\]\((https?:\/\/[^\)]+)\)/g)?.map((match, j) => {
+                                const url = match.match(/\((https?:\/\/[^\)]+)\)/)?.[1];
+                                if (!url) return null;
+                                const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+                                return isImage ? (
+                                  <img key={j} src={url} alt="attachment" className="rounded-lg max-w-full max-h-40 mb-2" />
+                                ) : (
+                                  <a key={j} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs underline mb-1">
+                                    <FileText className="h-3 w-3" /> Attachment
+                                  </a>
+                                );
+                              })}
+                              <p className="whitespace-pre-wrap">{msg.content.replace(/\n?\n?\[Attachment\]\(https?:\/\/[^\)]+\)/g, "").trim()}</p>
+                            </>
                           ) : (
                             <div className="prose prose-sm max-w-none dark:prose-invert">
                               <ReactMarkdown>{msg.content}</ReactMarkdown>
@@ -288,8 +354,48 @@ const HeroSection = () => {
               </div>
             )}
 
+            {/* Attachment previews */}
+            {attachments.length > 0 && (
+              <div className="flex gap-2 flex-wrap mb-2">
+                {attachments.map((att, i) => (
+                  <div key={i} className="relative group">
+                    {att.preview ? (
+                      <img src={att.preview} alt={att.file.name} className="h-16 w-16 rounded-lg object-cover border border-border" />
+                    ) : (
+                      <div className="h-16 w-16 rounded-lg border border-border bg-muted flex items-center justify-center">
+                        <FileText className="h-6 w-6 text-muted-foreground" />
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(i)}
+                      className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-destructive text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                    <p className="text-[10px] text-muted-foreground truncate w-16 mt-0.5">{att.file.name}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Input box */}
             <form onSubmit={handleSubmit} className="flex w-full items-end gap-2 rounded-2xl border border-border bg-card p-3 shadow-lg">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*,.pdf,.doc,.docx"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <Paperclip className="h-5 w-5" />
+              </button>
               <div className="flex-1 relative">
                 <textarea
                   value={query}
@@ -300,7 +406,7 @@ const HeroSection = () => {
                   className="w-full resize-none bg-transparent px-2 py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
                 {/* Auto-typing overlay */}
-                {!query && !chatActive && (
+                {!query && !chatActive && attachments.length === 0 && (
                   <div className="absolute inset-0 flex items-start px-2 py-2 pointer-events-none">
                     <span className="text-base text-muted-foreground">
                       {autoType.text}
@@ -319,7 +425,7 @@ const HeroSection = () => {
                   {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </button>
                 <button
-                  type="submit" disabled={!query.trim() || isLoading}
+                  type="submit" disabled={(!query.trim() && attachments.length === 0) || isLoading || uploading}
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
                   <Send className="h-5 w-5" />
