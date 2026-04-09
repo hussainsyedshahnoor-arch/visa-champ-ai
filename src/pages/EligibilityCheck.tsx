@@ -446,7 +446,13 @@ const EligibilityCheck = () => {
           </div>
         )}
       </div>
-      <SignupGateModal open={showSignupGate} onDismiss={() => setShowSignupGate(false)} />
+      <SignupGateModal
+        open={showSignupGate}
+        onDismiss={() => setShowSignupGate(false)}
+        required
+        title="Login to see your score 🔐"
+        description="Sign in or create a free account to get your personalized visa eligibility score."
+      />
     </div>
   );
 };
