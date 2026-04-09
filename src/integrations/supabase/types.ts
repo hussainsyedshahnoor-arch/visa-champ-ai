@@ -58,6 +58,41 @@ export type Database = {
           },
         ]
       }
+      application_notes: {
+        Row: {
+          application_id: string
+          author_id: string
+          content: string
+          created_at: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          application_id: string
+          author_id: string
+          content: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          application_id?: string
+          author_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "application_notes_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       application_status_history: {
         Row: {
           application_id: string
@@ -161,6 +196,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          target_id: string | null
+          target_table: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_table?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          target_id?: string | null
+          target_table?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       call_bookings: {
         Row: {
@@ -422,6 +487,50 @@ export type Database = {
             columns: ["visa_type_id"]
             isOneToOne: false
             referencedRelation: "visa_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      flagged_responses: {
+        Row: {
+          created_at: string
+          flag_reason: string
+          id: string
+          message_content: string
+          reviewer_id: string | null
+          reviewer_notes: string | null
+          session_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          flag_reason?: string
+          id?: string
+          message_content: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          session_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          flag_reason?: string
+          id?: string
+          message_content?: string
+          reviewer_id?: string | null
+          reviewer_notes?: string | null
+          session_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "flagged_responses_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
             referencedColumns: ["id"]
           },
         ]

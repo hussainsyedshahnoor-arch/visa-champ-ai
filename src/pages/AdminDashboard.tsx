@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Globe, ArrowLeft, Plus, Trash2, Edit2, Save, X, Shield, ClipboardList, MessageSquare, Calendar, FileText } from "lucide-react";
+import { Globe, ArrowLeft, Plus, Trash2, Edit2, Save, X, Shield, ClipboardList, MessageSquare, Calendar, FileText, History, AlertTriangle, StickyNote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +16,9 @@ import ApplicationsTab from "@/components/admin/ApplicationsTab";
 import MessagesTab from "@/components/admin/MessagesTab";
 import BookingsTab from "@/components/admin/BookingsTab";
 import DocumentRequestsTab from "@/components/admin/DocumentRequestsTab";
+import AuditLogTab from "@/components/admin/AuditLogTab";
+import FlaggedResponsesTab from "@/components/admin/FlaggedResponsesTab";
+import ApplicationNotesTab from "@/components/admin/ApplicationNotesTab";
 
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -193,6 +196,9 @@ const AdminDashboard = () => {
             <TabsTrigger value="messages" className="gap-1.5"><MessageSquare className="h-4 w-4" /> Messages</TabsTrigger>
             <TabsTrigger value="bookings" className="gap-1.5"><Calendar className="h-4 w-4" /> Bookings</TabsTrigger>
             <TabsTrigger value="doc-requests" className="gap-1.5"><FileText className="h-4 w-4" /> Doc Requests</TabsTrigger>
+            <TabsTrigger value="notes" className="gap-1.5"><StickyNote className="h-4 w-4" /> Notes</TabsTrigger>
+            <TabsTrigger value="flagged" className="gap-1.5"><AlertTriangle className="h-4 w-4" /> Flagged AI</TabsTrigger>
+            <TabsTrigger value="audit" className="gap-1.5"><History className="h-4 w-4" /> Audit Log</TabsTrigger>
             <TabsTrigger value="countries">Countries</TabsTrigger>
             <TabsTrigger value="visa-details" disabled={!selectedCountry}>Visa Types & Details</TabsTrigger>
           </TabsList>
@@ -211,6 +217,18 @@ const AdminDashboard = () => {
 
           <TabsContent value="doc-requests">
             <DocumentRequestsTab />
+          </TabsContent>
+
+          <TabsContent value="notes">
+            <ApplicationNotesTab />
+          </TabsContent>
+
+          <TabsContent value="flagged">
+            <FlaggedResponsesTab />
+          </TabsContent>
+
+          <TabsContent value="audit">
+            <AuditLogTab />
           </TabsContent>
 
           {/* Countries Tab */}
