@@ -12,6 +12,7 @@ import { useChatHistory } from "@/hooks/use-chat-history";
 import { useGuestSession } from "@/hooks/use-guest-session";
 import ChatHistorySidebar from "@/components/ChatHistorySidebar";
 import SignupGateModal from "@/components/SignupGateModal";
+import { supabase } from "@/integrations/supabase/client";
 import heroBeach1 from "@/assets/hero-beach-1.jpg";
 import heroBeach2 from "@/assets/hero-beach-2.jpg";
 import heroCity from "@/assets/hero-city.jpg";
