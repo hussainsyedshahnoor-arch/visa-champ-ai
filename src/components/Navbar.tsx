@@ -37,6 +37,7 @@ const Navbar = () => {
           <Link to="/eligibility" className={navLink}>Eligibility Check</Link>
           {user && (
             <>
+              <Link to="/dashboard" className={navLink}>Dashboard</Link>
               <Link to="/apply" className={navLink}>Apply</Link>
               <Link to="/applications" className={navLink}>My Applications</Link>
               <Link to="/documents" className={navLink}>Documents</Link>
