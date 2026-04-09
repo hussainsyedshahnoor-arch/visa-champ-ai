@@ -15,6 +15,7 @@ import MyApplications from "./pages/MyApplications";
 import BookCall from "./pages/BookCall";
 import DocumentVault from "./pages/DocumentVault";
 import Profile from "./pages/Profile";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/book-call" element={<BookCall />} />
             <Route path="/documents" element={<DocumentVault />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
