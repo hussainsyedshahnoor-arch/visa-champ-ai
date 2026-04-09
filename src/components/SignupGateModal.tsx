@@ -1,20 +1,23 @@
 import { Link } from "react-router-dom";
-import { Globe, MessageSquare, Shield } from "lucide-react";
+import { Globe, MessageSquare, Shield, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
   open: boolean;
   onDismiss: () => void;
   remainingMessages?: number;
+  required?: boolean;
+  title?: string;
+  description?: string;
 }
 
-const SignupGateModal = ({ open, onDismiss, remainingMessages = 0 }: Props) => {
+const SignupGateModal = ({ open, onDismiss, remainingMessages = 0, required = false, title, description }: Props) => {
   if (!open) return null;
 
   return (
     <>
       {/* Backdrop */}
-      <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={onDismiss} />
+      <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm" onClick={required ? undefined : onDismiss} />
 
       {/* Modal */}
       <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 animate-in fade-in zoom-in-95 duration-300">
@@ -26,10 +29,10 @@ const SignupGateModal = ({ open, onDismiss, remainingMessages = 0 }: Props) => {
             </div>
 
             <h2 className="mb-2 text-xl font-bold text-foreground">
-              You're on a roll! 🎉
+              {title || "You're on a roll! 🎉"}
             </h2>
             <p className="mb-6 text-sm text-muted-foreground">
-              Create a free account to continue chatting with Visa Champ and save your conversation history.
+              {description || "Create a free account to continue chatting with Visa Champ and save your conversation history."}
             </p>
 
             {/* Benefits */}
@@ -39,8 +42,12 @@ const SignupGateModal = ({ open, onDismiss, remainingMessages = 0 }: Props) => {
                 <span>Unlimited visa consultations</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-foreground">
+                <CheckCircle className="h-4 w-4 shrink-0 text-primary" />
+                <span>Free eligibility score checks</span>
+              </div>
+              <div className="flex items-center gap-3 text-sm text-foreground">
                 <Shield className="h-4 w-4 shrink-0 text-primary" />
-                <span>Your chat history saved securely</span>
+                <span>Your data saved securely</span>
               </div>
             </div>
 
@@ -58,12 +65,14 @@ const SignupGateModal = ({ open, onDismiss, remainingMessages = 0 }: Props) => {
               </Link>
             </div>
 
-            <button
-              onClick={onDismiss}
-              className="mt-4 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Maybe later
-            </button>
+            {!required && (
+              <button
+                onClick={onDismiss}
+                className="mt-4 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Maybe later
+              </button>
+            )}
           </div>
         </div>
       </div>
