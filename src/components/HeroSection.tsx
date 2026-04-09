@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Send, ArrowDown, Mic, MicOff, FileText, Phone, MessageSquarePlus, History } from "lucide-react";
+import { Send, Mic, MicOff, FileText, Phone, MessageSquarePlus, History, ArrowDown } from "lucide-react";
 import { Globe } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,9 @@ import { useChatHistory } from "@/hooks/use-chat-history";
 import { useGuestSession } from "@/hooks/use-guest-session";
 import ChatHistorySidebar from "@/components/ChatHistorySidebar";
 import SignupGateModal from "@/components/SignupGateModal";
-import heroBg from "@/assets/hero-bg.jpg";
+import heroBeach1 from "@/assets/hero-beach-1.jpg";
+import heroBeach2 from "@/assets/hero-beach-2.jpg";
+import heroCity from "@/assets/hero-city.jpg";
 
 const SUGGESTED_PROMPTS = [
   "Tourist visa for UAE",
@@ -20,6 +22,51 @@ const SUGGESTED_PROMPTS = [
   "Schengen tourist visa",
   "Tourist visa for USA",
 ];
+
+const AUTO_TYPE_PROMPTS = [
+  "Check my UAE tourist visa eligibility",
+  "Documents for UK visitor visa",
+  "Plan a trip to Turkey",
+  "Schengen visa requirements",
+];
+
+/* ── Auto-typing hook ── */
+function useAutoType(prompts: string[], speed = 60, pause = 1800) {
+  const [text, setText] = useState("");
+  const [active, setActive] = useState(true);
+
+  useEffect(() => {
+    if (!active) return;
+    let idx = 0;
+    let charIdx = 0;
+    let typing = true;
+    let timer: ReturnType<typeof setTimeout>;
+
+    const tick = () => {
+      if (!typing) return;
+      const current = prompts[idx];
+      if (charIdx <= current.length) {
+        setText(current.slice(0, charIdx));
+        charIdx++;
+        timer = setTimeout(tick, speed);
+      } else {
+        timer = setTimeout(() => {
+          idx = (idx + 1) % prompts.length;
+          charIdx = 0;
+          setText("");
+          timer = setTimeout(tick, 300);
+        }, pause);
+      }
+    };
+    tick();
+    return () => {
+      typing = false;
+      clearTimeout(timer);
+    };
+  }, [active, prompts, speed, pause]);
+
+  return { text, stop: () => setActive(false), start: () => setActive(true), isActive: active };
+}
 
 const HeroSection = () => {
   const [query, setQuery] = useState("");
@@ -35,19 +82,13 @@ const HeroSection = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { guestId, isAtCap, showGate, incrementCount, dismissGate, migrateToUser } = useGuestSession();
+  const autoType = useAutoType(AUTO_TYPE_PROMPTS);
 
   const {
-    sessions,
-    activeSessionId,
-    fetchSessions,
-    createSession,
-    saveMessage,
-    loadSession,
-    deleteSession,
-    clearActive,
+    sessions, activeSessionId, fetchSessions, createSession,
+    saveMessage, loadSession, deleteSession, clearActive,
   } = useChatHistory(user?.id, guestId);
 
-  // Migrate guest data when user logs in
   useEffect(() => {
     if (user && guestId) {
       migrateToUser(user.id).then(() => fetchSessions());
@@ -55,6 +96,12 @@ const HeroSection = () => {
   }, [user?.id]);
 
   const chatActive = messages.length > 0;
+
+  // Stop auto-type when user starts typing or chat is active
+  useEffect(() => {
+    if (chatActive || query.length > 0) autoType.stop();
+    else if (!chatActive && query.length === 0) autoType.start();
+  }, [chatActive, query]);
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -65,12 +112,7 @@ const HeroSection = () => {
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || isLoading) return;
-
-    // Guest cap check
-    if (!user && isAtCap) {
-      setShowSignupGate(true);
-      return;
-    }
+    if (!user && isAtCap) { setShowSignupGate(true); return; }
 
     const userMsg: Msg = { role: "user", content: trimmed };
     setMessages((prev) => [...prev, userMsg]);
@@ -79,21 +121,12 @@ const HeroSection = () => {
     setHasResponse(false);
     scrollToBottom();
 
-    // Create session on first message
     if (!sessionIdRef.current) {
       const newId = await createSession(trimmed);
       sessionIdRef.current = newId;
     }
-
-    // Save user message
-    if (sessionIdRef.current) {
-      await saveMessage(sessionIdRef.current, userMsg);
-    }
-
-    // Increment guest count
-    if (!user) {
-      await incrementCount();
-    }
+    if (sessionIdRef.current) await saveMessage(sessionIdRef.current, userMsg);
+    if (!user) await incrementCount();
 
     let assistantContent = "";
     const allMessages = [...messages, userMsg];
@@ -115,7 +148,6 @@ const HeroSection = () => {
         onDone: () => {
           setIsLoading(false);
           setHasResponse(true);
-          // Save assistant message
           if (sessionIdRef.current && assistantContent) {
             saveMessage(sessionIdRef.current, { role: "assistant", content: assistantContent });
           }
@@ -131,54 +163,29 @@ const HeroSection = () => {
   };
 
   const toggleVoice = useCallback(() => {
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      toast({ title: "Not supported", description: "Speech recognition is not supported in this browser.", variant: "destructive" });
-      return;
-    }
-
-    if (isListening && recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { toast({ title: "Not supported", description: "Speech recognition is not supported.", variant: "destructive" }); return; }
+    if (isListening && recognitionRef.current) { recognitionRef.current.stop(); setIsListening(false); return; }
+    const recognition = new SR();
     recognition.continuous = false;
     recognition.interimResults = true;
     recognition.lang = "";
-
-    recognition.onresult = (event: any) => {
-      const transcript = Array.from(event.results)
-        .map((result: any) => result[0].transcript)
-        .join("");
-      setQuery(transcript);
-
-      if (event.results[0].isFinal) {
-        setIsListening(false);
-        sendMessage(transcript);
-      }
+    recognition.onresult = (e: any) => {
+      const t = Array.from(e.results).map((r: any) => r[0].transcript).join("");
+      setQuery(t);
+      if (e.results[0].isFinal) { setIsListening(false); sendMessage(t); }
     };
-
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
-
     recognitionRef.current = recognition;
     recognition.start();
     setIsListening(true);
   }, [isListening, toast]);
 
   const startNewChat = useCallback(() => {
-    setMessages([]);
-    setQuery("");
-    setIsLoading(false);
-    setHasResponse(false);
-    sessionIdRef.current = null;
-    clearActive();
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
+    setMessages([]); setQuery(""); setIsLoading(false); setHasResponse(false);
+    sessionIdRef.current = null; clearActive();
+    if (recognitionRef.current) { recognitionRef.current.stop(); setIsListening(false); }
   }, [clearActive]);
 
   const handleSelectSession = useCallback(async (sessionId: string) => {
@@ -189,204 +196,178 @@ const HeroSection = () => {
     setTimeout(() => scrollToBottom(), 100);
   }, [loadSession]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    sendMessage(query);
-  };
-
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); sendMessage(query); };
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage(query);
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(query); }
   };
 
   return (
     <>
       <ChatHistorySidebar
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        sessions={sessions}
-        activeSessionId={activeSessionId}
-        onSelectSession={handleSelectSession}
-        onDeleteSession={deleteSession}
-        onFetch={fetchSessions}
-        isLoggedIn={!!user}
+        open={sidebarOpen} onClose={() => setSidebarOpen(false)}
+        sessions={sessions} activeSessionId={activeSessionId}
+        onSelectSession={handleSelectSession} onDeleteSession={deleteSession}
+        onFetch={fetchSessions} isLoggedIn={!!user}
       />
-
       <SignupGateModal
         open={showSignupGate || showGate}
         onDismiss={() => { setShowSignupGate(false); dismissGate(); }}
       />
 
-      <section className="relative flex min-h-[90vh] flex-col overflow-hidden">
-        {/* Background */}
-        <div className="absolute inset-0 -z-10">
-          <img src={heroBg} alt="" className="h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
-        </div>
-
-        {/* Content area */}
-        <div className="container relative z-10 flex flex-1 flex-col items-center px-4">
-          {/* Hero text */}
-          <div className={`flex flex-col items-center text-center transition-all duration-500 ${chatActive ? "pt-8 pb-4" : "flex-1 justify-center"}`}>
-            <div className={`flex items-center gap-3 ${chatActive ? "w-full max-w-2xl justify-between" : "justify-center"}`}>
-              {/* History button */}
-              <Button
-                onClick={() => setSidebarOpen(true)}
-                variant="ghost"
-                size="sm"
-                className="shrink-0 text-white/70 hover:text-white hover:bg-white/10 gap-1.5"
-              >
+      <section className="relative min-h-[90vh] bg-background overflow-hidden">
+        <div className="container relative z-10 flex flex-col lg:flex-row items-center gap-8 px-4 py-16 lg:py-24">
+          {/* ── Left: Chat ── */}
+          <div className="flex-1 w-full max-w-xl flex flex-col">
+            {/* Header row */}
+            <div className="flex items-center justify-between mb-2">
+              <Button onClick={() => setSidebarOpen(true)} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5">
                 <History className="h-4 w-4" />
                 <span className="hidden sm:inline">History</span>
               </Button>
-
-              <h1 className={`font-extrabold tracking-tight text-white animate-fade-in transition-all duration-500 ${chatActive ? "mb-0 text-2xl md:text-3xl" : "mb-6 text-4xl md:text-6xl lg:text-7xl"}`}>
-                Your visa. Sorted in{" "}
-                <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">minutes.</span>
-              </h1>
-
-              {chatActive ? (
-                <Button
-                  onClick={startNewChat}
-                  variant="ghost"
-                  size="sm"
-                  className="shrink-0 text-white/70 hover:text-white hover:bg-white/10 gap-1.5"
-                >
+              {chatActive && (
+                <Button onClick={startNewChat} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5">
                   <MessageSquarePlus className="h-4 w-4" />
                   <span className="hidden sm:inline">New Chat</span>
                 </Button>
-              ) : (
-                <div className="w-[88px] hidden sm:block" /> 
               )}
             </div>
 
+            {/* Heading */}
             {!chatActive && (
-              <p className="mb-10 max-w-2xl text-lg text-white/70 md:text-xl animate-fade-in" style={{ animationDelay: "0.1s" }}>
-                Ask me about tourist visa eligibility, documents & requirements — I'll guide you through it.
-              </p>
+              <div className="mb-8">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-tight">
+                  Your visa. Sorted in{" "}
+                  <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">minutes.</span>
+                </h1>
+                <p className="mt-4 text-lg text-muted-foreground">
+                  Ask me about tourist visa eligibility, documents & requirements — I'll guide you through it.
+                </p>
+              </div>
             )}
-          </div>
 
-          {/* Chat messages area */}
-          {chatActive && (
-            <div ref={scrollRef} className="w-full max-w-2xl flex-1 overflow-y-auto px-2 pb-4">
-              <div className="space-y-4">
-                {messages.map((msg, i) => {
-                  const isUser = msg.role === "user";
-                  return (
-                    <div key={i} className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
-                      <Avatar className="h-8 w-8 shrink-0">
-                        <AvatarFallback className={isUser ? "bg-white/20 text-white" : "bg-primary text-primary-foreground"}>
-                          {isUser ? "👤" : <Globe className="h-4 w-4" />}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm backdrop-blur-md ${
-                        isUser
-                          ? "bg-primary/80 text-white rounded-tr-md"
-                          : "bg-white/15 text-white rounded-tl-md"
-                      }`}>
-                        {isUser ? (
-                          <p className="whitespace-pre-wrap">{msg.content}</p>
-                        ) : (
-                          <div className="prose prose-sm prose-invert max-w-none">
-                            <ReactMarkdown>{msg.content}</ReactMarkdown>
-                          </div>
-                        )}
+            {/* Chat messages */}
+            {chatActive && (
+              <div ref={scrollRef} className="flex-1 max-h-[50vh] overflow-y-auto mb-4 pr-2">
+                <div className="space-y-4">
+                  {messages.map((msg, i) => {
+                    const isUser = msg.role === "user";
+                    return (
+                      <div key={i} className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarFallback className={isUser ? "bg-muted text-foreground" : "bg-primary text-primary-foreground"}>
+                            {isUser ? "👤" : <Globe className="h-4 w-4" />}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
+                          isUser ? "bg-primary text-primary-foreground rounded-tr-md" : "bg-muted text-foreground rounded-tl-md"
+                        }`}>
+                          {isUser ? (
+                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                          ) : (
+                            <div className="prose prose-sm max-w-none dark:prose-invert">
+                              <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
-                {isLoading && messages[messages.length - 1]?.role !== "assistant" && <TypingIndicator />}
+                    );
+                  })}
+                  {isLoading && messages[messages.length - 1]?.role !== "assistant" && <TypingIndicator />}
 
-                {/* Action buttons after response */}
-                {hasResponse && !isLoading && (
-                  <div className="flex flex-wrap gap-2 pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 rounded-full border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-                      onClick={() => window.location.assign("/eligibility")}
-                    >
-                      <FileText className="h-4 w-4" />
-                      Apply for Visa
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-2 rounded-full border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
-                      onClick={() => window.location.assign("https://wa.me/923001234567?text=Hi%2C%20I%20need%20help%20with%20my%20tourist%20visa")}
-                    >
-                      <Phone className="h-4 w-4" />
-                      Talk to Visa Officer
-                    </Button>
+                  {hasResponse && !isLoading && (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      <Button variant="outline" size="sm" className="gap-2 rounded-full" onClick={() => window.location.assign("/eligibility")}>
+                        <FileText className="h-4 w-4" /> Apply for Visa
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-2 rounded-full" onClick={() => window.location.assign("https://wa.me/923001234567?text=Hi%2C%20I%20need%20help%20with%20my%20tourist%20visa")}>
+                        <Phone className="h-4 w-4" /> Talk to Visa Officer
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Input box */}
+            <form onSubmit={handleSubmit} className="flex w-full items-end gap-2 rounded-2xl border border-border bg-card p-3 shadow-lg">
+              <div className="flex-1 relative">
+                <textarea
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  rows={2}
+                  placeholder=""
+                  className="w-full resize-none bg-transparent px-2 py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
+                />
+                {/* Auto-typing overlay */}
+                {!query && !chatActive && (
+                  <div className="absolute inset-0 flex items-start px-2 py-2 pointer-events-none">
+                    <span className="text-base text-muted-foreground">
+                      {autoType.text}
+                      <span className="inline-block w-0.5 h-5 bg-primary animate-pulse ml-0.5 align-middle" />
+                    </span>
                   </div>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* Suggestion chips */}
-          {!chatActive && (
-            <div className="mb-6 flex flex-wrap justify-center gap-3 animate-fade-in" style={{ animationDelay: "0.3s" }}>
-              {SUGGESTED_PROMPTS.map((prompt) => (
+              <div className="flex items-center gap-1.5 pb-1">
                 <button
-                  key={prompt}
-                  onClick={() => sendMessage(prompt)}
-                  className="rounded-full border border-white/30 px-5 py-2.5 text-sm text-white/80 backdrop-blur-sm transition-all hover:border-white/60 hover:text-white hover:bg-white/10"
+                  type="button" onClick={toggleVoice}
+                  className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${
+                    isListening ? "bg-destructive text-white animate-pulse" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  }`}
                 >
-                  {prompt}
+                  {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </button>
-              ))}
-            </div>
-          )}
-
-          {/* Input bar */}
-          <div className="w-full max-w-2xl pb-8 pt-2">
-            <form
-              onSubmit={handleSubmit}
-              className="flex w-full items-center gap-2 rounded-2xl bg-white p-2 shadow-2xl"
-            >
-              <input
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={chatActive ? "Ask a follow-up question..." : "Ask anything about tourist visas..."}
-                className="flex-1 bg-transparent px-4 py-3 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
-              />
-              <button
-                type="button"
-                onClick={toggleVoice}
-                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors ${
-                  isListening
-                    ? "bg-destructive text-white animate-pulse"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                }`}
-              >
-                {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-              </button>
-              <button
-                type="submit"
-                disabled={!query.trim() || isLoading}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
-              >
-                <Send className="h-5 w-5" />
-              </button>
+                <button
+                  type="submit" disabled={!query.trim() || isLoading}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+                >
+                  <Send className="h-5 w-5" />
+                </button>
+              </div>
             </form>
+
+            {/* Suggestion chips */}
+            {!chatActive && (
+              <div className="mt-5 flex flex-wrap gap-2.5">
+                {SUGGESTED_PROMPTS.map((prompt) => (
+                  <button
+                    key={prompt} onClick={() => sendMessage(prompt)}
+                    className="rounded-full bg-accent/15 border border-accent/30 px-5 py-2.5 text-sm text-foreground transition-all hover:bg-accent/25 hover:border-accent/50"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Scroll indicator */}
+            {!chatActive && (
+              <a href="#how-it-works" className="mt-8 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                See how I can help you <ArrowDown className="h-4 w-4 animate-bounce" />
+              </a>
+            )}
           </div>
 
-          {/* Scroll indicator */}
+          {/* ── Right: Decorative bubble images ── */}
           {!chatActive && (
-            <a
-              href="#how-it-works"
-              className="mb-8 flex flex-col items-center gap-1 text-sm text-white/60 transition-colors hover:text-white/80 animate-fade-in"
-              style={{ animationDelay: "0.5s" }}
-            >
-              See how I can help you
-              <ArrowDown className="h-4 w-4 animate-bounce" />
-            </a>
+            <div className="hidden lg:flex flex-1 items-center justify-center relative" style={{ minHeight: 480 }}>
+              {/* Large top-right circle */}
+              <div className="absolute top-0 right-0 w-72 h-72 rounded-full overflow-hidden shadow-2xl">
+                <img src={heroBeach1} alt="Tropical beach" className="w-full h-full object-cover" width={800} height={800} />
+              </div>
+              {/* Large bottom-left circle */}
+              <div className="absolute bottom-0 left-4 w-64 h-64 rounded-full overflow-hidden shadow-2xl">
+                <img src={heroBeach2} alt="Overwater bungalows" className="w-full h-full object-cover" width={800} height={800} />
+              </div>
+              {/* Medium center-right circle */}
+              <div className="absolute top-40 right-24 w-52 h-52 rounded-full overflow-hidden shadow-xl">
+                <img src={heroCity} alt="Dubai skyline" className="w-full h-full object-cover" loading="lazy" width={800} height={800} />
+              </div>
+              {/* Decorative dots */}
+              <div className="absolute top-16 left-20 w-16 h-16 rounded-full bg-primary/20" />
+              <div className="absolute bottom-20 right-8 w-10 h-10 rounded-full bg-accent/20" />
+            </div>
           )}
         </div>
       </section>
