@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
+import BrandLogo from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -59,8 +60,8 @@ const ResetPassword = () => {
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <Link to="/" className="mx-auto mb-4 flex items-center gap-2 text-xl font-bold text-primary">
-              <Globe className="h-6 w-6" /> Visa Champion
+            <Link to="/" className="mx-auto mb-4 inline-flex">
+              <BrandLogo size="md" />
             </Link>
             <CardTitle>Invalid Link</CardTitle>
             <CardDescription>This password reset link is invalid or has expired.</CardDescription>
@@ -77,8 +78,8 @@ const ResetPassword = () => {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <Link to="/" className="mx-auto mb-4 flex items-center gap-2 text-xl font-bold text-primary">
-            <Globe className="h-6 w-6" /> Visa Champion
+          <Link to="/" className="mx-auto mb-4 inline-flex">
+            <BrandLogo size="md" />
           </Link>
           <CardTitle className="flex items-center justify-center gap-2">
             <Lock className="h-5 w-5" /> Set New Password

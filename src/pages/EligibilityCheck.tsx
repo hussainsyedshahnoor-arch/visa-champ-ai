@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import BrandLogo from "@/components/BrandLogo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -144,8 +145,8 @@ const EligibilityCheck = () => {
             <Button variant="ghost" size="icon" asChild>
               <Link to="/"><ArrowLeft className="h-5 w-5" /></Link>
             </Button>
-            <Link to="/" className="flex items-center gap-2 text-lg font-bold text-primary">
-              <Globe className="h-5 w-5" /> Visa Champion
+            <Link to="/" className="flex items-center">
+              <BrandLogo size="sm" />
             </Link>
           </div>
           <ThemeToggle />

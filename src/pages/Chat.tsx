@@ -11,6 +11,7 @@ import { streamChat, type Msg } from "@/lib/chat-stream";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useChatHistory, type ChatSession } from "@/hooks/use-chat-history";
+import BrandLogo from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 
 const SUGGESTED_PROMPTS = [
@@ -200,9 +201,8 @@ const Chat = () => {
         <div className="flex h-full w-72 flex-col">
           {/* Sidebar header */}
           <div className="flex items-center justify-between border-b px-4 py-3">
-            <Link to="/" className="flex items-center gap-2 text-lg font-bold text-primary">
-              <Globe className="h-5 w-5" />
-              Visa Champion
+            <Link to="/" className="flex items-center">
+              <BrandLogo size="sm" />
             </Link>
             <ThemeToggle />
           </div>
@@ -284,11 +284,9 @@ const Chat = () => {
             </svg>
           </button>
           <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              <Globe className="h-5 w-5" />
-            </div>
+            <BrandLogo size="sm" showText={false} />
             <div>
-              <h1 className="text-sm font-semibold text-foreground">Visa Champion</h1>
+              <h1 className="text-sm font-semibold text-foreground">Visa Champ</h1>
               <p className="text-xs text-muted-foreground">Tourist Visa Consultant for Pakistan</p>
             </div>
           </div>
@@ -368,7 +366,7 @@ const Chat = () => {
                       variant="outline"
                       size="sm"
                       className="gap-2 rounded-full"
-                      onClick={() => window.open("https://wa.me/923001234567?text=Hi%2C%20I%20need%20help%20with%20my%20tourist%20visa", "_blank")}
+                    onClick={() => navigate("/book-call")}
                     >
                       <Phone className="h-4 w-4" />
                       Talk to Visa Officer

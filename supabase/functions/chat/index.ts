@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const SYSTEM_PROMPT = `You are Visa Champion, a warm and friendly AI buddy who helps Pakistani passport holders with tourist visa questions.
+const SYSTEM_PROMPT = `You are Visa Champ, a warm and friendly AI buddy who helps Pakistani passport holders with tourist visa questions.
 
 Your personality:
 - Talk like a helpful friend — casual, warm, encouraging
@@ -49,6 +50,30 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    // Try to enrich system prompt with user profile
+    let systemPrompt = SYSTEM_PROMPT;
+    const authHeader = req.headers.get("Authorization");
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (authHeader && supabaseUrl && serviceKey) {
+      try {
+        const sb = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+        const token = authHeader.replace("Bearer ", "");
+        const { data: { user } } = await sb.auth.getUser(token);
+        if (user) {
+          const { data: profile } = await sb.from("profiles").select("display_name, phone").eq("user_id", user.id).maybeSingle();
+          const lines = [
+            profile?.display_name ? `- Name: ${profile.display_name}` : null,
+            user.email ? `- Email: ${user.email}` : null,
+            profile?.phone ? `- Phone: ${profile.phone}` : null,
+          ].filter(Boolean);
+          if (lines.length) {
+            systemPrompt += `\n\nSigned-in user context:\n${lines.join("\n")}\nUse these details only when relevant. Never invent missing info.`;
+          }
+        }
+      } catch (e) { console.error("profile enrichment error:", e); }
+    }
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -58,7 +83,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "google/gemini-3-flash-preview",
         messages: [
-          { role: "system", content: SYSTEM_PROMPT },
+          { role: "system", content: systemPrompt },
           ...messages,
         ],
         stream: true,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Calendar, Clock, Phone, ArrowLeft, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,7 +86,10 @@ const BookCall = () => {
           <p className="text-muted-foreground mb-6">
             Your call has been scheduled for {selectedDate} at {selectedSlot}. We'll confirm shortly.
           </p>
-          <Button onClick={() => navigate("/")}>Back to Home</Button>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Button asChild><Link to="/apply">Apply for Visa</Link></Button>
+            <Button variant="outline" onClick={() => navigate("/")}>Back to Home</Button>
+          </div>
         </div>
       </div>
     );
@@ -107,10 +110,13 @@ const BookCall = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Phone className="h-5 w-5 text-primary" />
-              Book a Call with Visa Officer
-            </CardTitle>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Phone className="h-5 w-5 text-primary" />
+                Talk to a Visa Officer
+              </CardTitle>
+              <Button asChild variant="outline" size="sm"><Link to="/apply">Apply for Visa</Link></Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-5">
             <div>

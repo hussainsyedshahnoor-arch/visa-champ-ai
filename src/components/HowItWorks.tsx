@@ -1,7 +1,7 @@
 import { MessageCircle, ClipboardList, CheckCircle, Plane } from "lucide-react";
 
 const steps = [
-  { icon: MessageCircle, title: "Ask Visa Champion", desc: "Tell us which country you want to visit. Our AI knows the requirements." },
+  { icon: MessageCircle, title: "Ask Visa Champ", desc: "Tell us which country you want to visit. Our AI knows the requirements." },
   { icon: ClipboardList, title: "Get Your Checklist", desc: "Receive a personalized document checklist for your tourist visa." },
   { icon: CheckCircle, title: "Check Eligibility", desc: "Find out if you qualify and what gaps need to be addressed." },
   { icon: Plane, title: "Apply & Travel", desc: "Follow the step-by-step guide to submit your tourist visa application." },

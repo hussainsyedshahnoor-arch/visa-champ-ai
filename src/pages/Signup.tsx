@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Globe } from "lucide-react";
+import BrandLogo from "@/components/BrandLogo";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 
 const Signup = () => {
@@ -14,7 +15,12 @@ const Signup = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (user) navigate("/dashboard", { replace: true });
+  }, [user, navigate]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,29 +34,29 @@ const Signup = () => {
     if (error) {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Welcome to Visa Champion!", description: "Your account is ready." });
-      navigate("/dashboard");
+      toast({ title: "Welcome to Visa Champ!", description: "Your account is ready." });
+      navigate("/dashboard", { replace: true });
     }
   };
 
   const handleGoogleSignup = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}/dashboard`,
     });
     if (result.error) {
       toast({ title: "Google signup failed", description: String(result.error), variant: "destructive" });
       return;
     }
     if (result.redirected) return;
-    navigate("/dashboard");
+    navigate("/dashboard", { replace: true });
   };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <Link to="/" className="mx-auto mb-4 flex items-center gap-2 text-xl font-bold text-primary">
-            <Globe className="h-6 w-6" /> Visa Champion
+          <Link to="/" className="mx-auto mb-4 inline-flex">
+            <BrandLogo size="md" />
           </Link>
           <CardTitle>Create your account</CardTitle>
           <CardDescription>Start your visa consultation — it's free</CardDescription>

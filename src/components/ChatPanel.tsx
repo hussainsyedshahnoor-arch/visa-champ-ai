@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Globe, Send, X, Info, FileText, Phone } from "lucide-react";
+import { Send, X, Info, FileText, Phone } from "lucide-react";
 import ChatMessage from "@/components/ChatMessage";
 import TypingIndicator from "@/components/TypingIndicator";
+import BrandLogo from "@/components/BrandLogo";
 import { streamChat, type Msg } from "@/lib/chat-stream";
 import { useToast } from "@/hooks/use-toast";
 
@@ -89,11 +90,9 @@ const ChatPanel = ({ initialPrompt, onClose }: ChatPanelProps) => {
         {/* Header */}
         <div className="flex items-center justify-between border-b bg-card px-5 py-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              <Globe className="h-5 w-5" />
-            </div>
+            <BrandLogo size="sm" showText={false} />
             <div>
-              <h3 className="text-sm font-semibold">Visa Champion</h3>
+              <h3 className="text-sm font-semibold">Visa Champ</h3>
               <p className="text-xs text-muted-foreground">Tourist Visa Consultant</p>
             </div>
           </div>
@@ -119,7 +118,7 @@ const ChatPanel = ({ initialPrompt, onClose }: ChatPanelProps) => {
               variant="outline"
               size="sm"
               className="gap-2 rounded-full"
-              onClick={() => window.location.href = "/eligibility"}
+              onClick={() => window.location.href = "/apply"}
             >
               <FileText className="h-4 w-4" />
               Apply for Visa
@@ -128,7 +127,7 @@ const ChatPanel = ({ initialPrompt, onClose }: ChatPanelProps) => {
               variant="outline"
               size="sm"
               className="gap-2 rounded-full"
-              onClick={() => window.open("https://wa.me/923001234567?text=Hi%2C%20I%20need%20help%20with%20my%20tourist%20visa", "_blank")}
+              onClick={() => window.location.href = "/book-call"}
             >
               <Phone className="h-4 w-4" />
               Talk to Visa Officer
