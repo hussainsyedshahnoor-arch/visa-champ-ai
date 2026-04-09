@@ -32,6 +32,7 @@ const App = () => (
             <Route path="/eligibility" element={<EligibilityCheck />} />
             <Route path="/apply" element={<ApplyVisa />} />
             <Route path="/applications" element={<MyApplications />} />
+            <Route path="/book-call" element={<BookCall />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
