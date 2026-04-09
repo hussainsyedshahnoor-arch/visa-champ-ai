@@ -8,6 +8,47 @@ import { Globe } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+const ForgotPasswordLink = () => {
+  const [showForm, setShowForm] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+  const [sending, setSending] = useState(false);
+  const { toast } = useToast();
+
+  const handleForgot = async () => {
+    if (!resetEmail) return;
+    setSending(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setSending(false);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Check your email", description: "We sent you a password reset link." });
+      setShowForm(false);
+    }
+  };
+
+  if (!showForm) {
+    return (
+      <button type="button" onClick={() => setShowForm(true)} className="text-xs text-primary hover:underline">
+        Forgot password?
+      </button>
+    );
+  }
+
+  return (
+    <div className="space-y-2 rounded-md border p-3 bg-muted/30">
+      <p className="text-xs text-muted-foreground">Enter your email to receive a reset link</p>
+      <Input type="email" placeholder="you@example.com" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
+      <div className="flex gap-2">
+        <Button size="sm" onClick={handleForgot} disabled={sending || !resetEmail}>{sending ? "Sending..." : "Send Link"}</Button>
+        <Button size="sm" variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
+      </div>
+    </div>
+  );
+};
+
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,6 +94,7 @@ const Login = () => {
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <ForgotPasswordLink />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Logging in..." : "Log in"}
