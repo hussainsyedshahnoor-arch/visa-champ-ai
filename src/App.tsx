@@ -13,6 +13,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ApplyVisa from "./pages/ApplyVisa";
 import MyApplications from "./pages/MyApplications";
 import BookCall from "./pages/BookCall";
+import DocumentVault from "./pages/DocumentVault";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/apply" element={<ApplyVisa />} />
             <Route path="/applications" element={<MyApplications />} />
             <Route path="/book-call" element={<BookCall />} />
+            <Route path="/documents" element={<DocumentVault />} />
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

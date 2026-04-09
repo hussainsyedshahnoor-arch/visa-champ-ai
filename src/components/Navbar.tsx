@@ -22,6 +22,7 @@ const Navbar = () => {
           <Link to="/eligibility" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Eligibility Check</Link>
           <Link to="/apply" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Apply</Link>
           <Link to="/applications" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">My Applications</Link>
+          <Link to="/documents" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Documents</Link>
           <a href="#features" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Features</a>
         </div>
 
@@ -47,6 +48,7 @@ const Navbar = () => {
             <Link to="/eligibility" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Eligibility Check</Link>
             <Link to="/apply" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Apply</Link>
             <Link to="/applications" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>My Applications</Link>
+            <Link to="/documents" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Documents</Link>
             <a href="#features" className="text-sm font-medium" onClick={() => setMobileOpen(false)}>Features</a>
             <hr />
             <Button variant="ghost" asChild><Link to="/login">Log in</Link></Button>
