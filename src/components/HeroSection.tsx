@@ -77,6 +77,7 @@ const HeroSection = () => {
   const [isListening, setIsListening] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSignupGate, setShowSignupGate] = useState(false);
+  const [guestMsgCount, setGuestMsgCount] = useState(0);
   const [attachments, setAttachments] = useState<{ file: File; preview: string; url?: string }[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -147,7 +148,15 @@ const HeroSection = () => {
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
     if ((!trimmed && attachments.length === 0) || isLoading) return;
-    if (!user) { setShowSignupGate(true); return; }
+
+    // Allow 2 free messages for guests, then require login
+    if (!user) {
+      if (guestMsgCount >= 2) {
+        setShowSignupGate(true);
+        return;
+      }
+      setGuestMsgCount((c) => c + 1);
+    }
 
     // Upload attachments first
     let attachmentUrls: string[] = [];

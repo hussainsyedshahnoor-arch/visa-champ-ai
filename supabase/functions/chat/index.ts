@@ -47,26 +47,21 @@ serve(async (req) => {
 
   try {
     const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(
-        JSON.stringify({ error: "Login required to use chat" }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    let userId: string | null = null;
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: claimsData, error: claimsErr } = await userClient.auth.getClaims(
-      authHeader.replace("Bearer ", "")
-    );
-    if (claimsErr || !claimsData?.claims?.sub) {
-      return new Response(
-        JSON.stringify({ error: "Invalid session. Please log in again." }),
-        { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+    // Auth is optional — frontend gates after 2 free messages
+    if (authHeader?.startsWith("Bearer ")) {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+      try {
+        const userClient = createClient(supabaseUrl, anonKey, {
+          global: { headers: { Authorization: authHeader } },
+        });
+        const { data: claimsData } = await userClient.auth.getClaims(
+          authHeader.replace("Bearer ", "")
+        );
+        userId = claimsData?.claims?.sub ?? null;
+      } catch (_) { /* guest user */ }
     }
 
     const { messages } = await req.json();
@@ -75,8 +70,9 @@ serve(async (req) => {
 
     // Try to enrich system prompt with user profile
     let systemPrompt = SYSTEM_PROMPT;
+    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-    if (authHeader && supabaseUrl && serviceKey) {
+    if (authHeader?.startsWith("Bearer ") && supabaseUrl && serviceKey) {
       try {
         const sb = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
         const token = authHeader.replace("Bearer ", "");
