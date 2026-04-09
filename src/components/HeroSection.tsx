@@ -113,10 +113,57 @@ const HeroSection = () => {
     }, 50);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const newAttachments = files.map((file) => ({
+      file,
+      preview: file.type.startsWith("image/") ? URL.createObjectURL(file) : "",
+    }));
+    setAttachments((prev) => [...prev, ...newAttachments].slice(0, 5));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeAttachment = (idx: number) => {
+    setAttachments((prev) => {
+      const a = prev[idx];
+      if (a.preview) URL.revokeObjectURL(a.preview);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  const uploadAttachments = async (): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const att of attachments) {
+      const ext = att.file.name.split(".").pop() || "bin";
+      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage.from("chat-attachments").upload(path, att.file);
+      if (error) { toast({ title: "Upload failed", description: error.message, variant: "destructive" }); continue; }
+      const { data: urlData } = supabase.storage.from("chat-attachments").getPublicUrl(path);
+      urls.push(urlData.publicUrl);
+    }
+    return urls;
+  };
+
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed || isLoading) return;
+    if ((!trimmed && attachments.length === 0) || isLoading) return;
     if (!user && isAtCap) { setShowSignupGate(true); return; }
+
+    // Upload attachments first
+    let attachmentUrls: string[] = [];
+    if (attachments.length > 0) {
+      setUploading(true);
+      attachmentUrls = await uploadAttachments();
+      setAttachments([]);
+      setUploading(false);
+    }
+
+    // Build message content with attachments
+    let content = trimmed;
+    if (attachmentUrls.length > 0) {
+      const attachmentText = attachmentUrls.map((url) => `[Attachment](${url})`).join("\n");
+      content = content ? `${content}\n\n${attachmentText}` : attachmentText;
+    }
 
     const userMsg: Msg = { role: "user", content: trimmed };
     setMessages((prev) => [...prev, userMsg]);
