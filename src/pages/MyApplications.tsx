@@ -70,7 +70,7 @@ const MyApplications = () => {
               const status = STATUS_CONFIG[app.status] || STATUS_CONFIG.draft;
               const StatusIcon = status.icon;
               return (
-                <div key={app.id} className="rounded-xl border bg-card p-5 transition-shadow hover:shadow-md">
+                <Link key={app.id} to={`/applications/${app.id}`} className="block rounded-xl border bg-card p-5 transition-shadow hover:shadow-md">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -88,7 +88,7 @@ const MyApplications = () => {
                       {status.label}
                     </Badge>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
