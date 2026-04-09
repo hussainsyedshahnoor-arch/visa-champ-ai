@@ -2,13 +2,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Star, Quote } from "lucide-react";
 
 const reviews = [
-  { name: "Ali Raza", initials: "AR", location: "Lahore", visa: "UAE Tourist Visa", text: "Visa Champion helped me understand exactly what I needed for my UAE tourist visa. Got approved on the first try!" },
-  { name: "Fatima Khan", initials: "FK", location: "Karachi", visa: "Schengen Visa", text: "I was confused about Schengen visa documents. Visa Champion gave me a clear checklist — so helpful!" },
+  { name: "Ali Raza", initials: "AR", location: "Lahore", visa: "UAE Tourist Visa", text: "Visa Champ helped me understand exactly what I needed for my UAE tourist visa. Got approved on the first try!" },
+  { name: "Fatima Khan", initials: "FK", location: "Karachi", visa: "Schengen Visa", text: "I was confused about Schengen visa documents. Visa Champ gave me a clear checklist — so helpful!" },
   { name: "Hassan Malik", initials: "HM", location: "Islamabad", visa: "UK Tourist Visa", text: "Saved me hours of research. Got all the info about UK tourist visa requirements in minutes." },
   { name: "Zainab Shah", initials: "ZS", location: "Rawalpindi", visa: "Canada Tourist Visa", text: "The AI knew exactly which documents I needed for Canada. Super impressed with the guidance!" },
-  { name: "Usman Tariq", initials: "UT", location: "Faisalabad", visa: "Turkey Tourist Visa", text: "Applied for Turkey tourist visa after chatting with Visa Champion. Approved in 3 days!" },
+  { name: "Usman Tariq", initials: "UT", location: "Faisalabad", visa: "Turkey Tourist Visa", text: "Applied for Turkey tourist visa after chatting with Visa Champ. Approved in 3 days!" },
   { name: "Sara Ahmed", initials: "SA", location: "Multan", visa: "Malaysia Tourist Visa", text: "Best visa guidance I've ever received. Clear, simple and straight to the point." },
-  { name: "Bilal Hussain", initials: "BH", location: "Peshawar", visa: "USA Tourist Visa", text: "Was nervous about my US visa application. Visa Champion broke it all down beautifully." },
+  { name: "Bilal Hussain", initials: "BH", location: "Peshawar", visa: "USA Tourist Visa", text: "Was nervous about my US visa application. Visa Champ broke it all down beautifully." },
   { name: "Ayesha Noor", initials: "AN", location: "Quetta", visa: "Australia Tourist Visa", text: "Finally understood the Australian visa process. This tool is a game changer for Pakistanis!" },
 ];
 
@@ -37,7 +37,7 @@ const Testimonials = () => {
             Trusted by Pakistani Travellers
           </h2>
           <p className="text-lg text-muted-foreground">
-            Join thousands who simplified their visa journey with Visa Champion.
+            Join thousands who simplified their visa journey with Visa Champ.
           </p>
         </div>
       </div>

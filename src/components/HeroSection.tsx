@@ -342,10 +342,10 @@ const HeroSection = () => {
 
                   {hasResponse && !isLoading && (
                     <div className="flex flex-wrap gap-2 pt-2">
-                      <Button variant="outline" size="sm" className="gap-2 rounded-full" onClick={() => window.location.assign("/eligibility")}>
+                      <Button variant="outline" size="sm" className="gap-2 rounded-full" onClick={() => window.location.assign("/apply")}>
                         <FileText className="h-4 w-4" /> Apply for Visa
                       </Button>
-                      <Button variant="outline" size="sm" className="gap-2 rounded-full" onClick={() => window.location.assign("https://wa.me/923001234567?text=Hi%2C%20I%20need%20help%20with%20my%20tourist%20visa")}>
+                      <Button variant="outline" size="sm" className="gap-2 rounded-full" onClick={() => window.location.assign("/book-call")}>
                         <Phone className="h-4 w-4" /> Talk to Visa Officer
                       </Button>
                     </div>
