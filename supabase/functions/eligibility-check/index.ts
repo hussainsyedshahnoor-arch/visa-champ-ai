@@ -62,10 +62,10 @@ Evaluate this application with STRICT, REALISTIC scoring based on the detailed r
 - Has Residency in Another Country: ${formData.hasOtherResidency ? "Yes — " + (formData.otherResidencyCountry || "Not specified") : "No"}
 
 **Required Documents for this visa:**
-${documents.map((d: any) => \`- \${d.document_name} (\${d.is_mandatory ? "Mandatory" : "Optional"}): \${d.description}\`).join("\n")}
+${documents.map((d: any) => `- ${d.document_name} (${d.is_mandatory ? "Mandatory" : "Optional"}): ${d.description}`).join("\n")}
 
 **Eligibility Criteria:**
-${criteria.map((c: any) => \`- \${c.criteria_name}: \${c.criteria_description}\${c.min_value ? " (Min: " + c.min_value + ")" : ""} [\${c.is_mandatory ? "Required" : "Recommended"}]\`).join("\n")}
+${criteria.map((c: any) => `- ${c.criteria_name}: ${c.criteria_description}${c.min_value ? " (Min: " + c.min_value + ")" : ""} [${c.is_mandatory ? "Required" : "Recommended"}]`).join("\n")}
 
 ===== DETAILED SCORING RULES — FOLLOW STRICTLY =====
 
