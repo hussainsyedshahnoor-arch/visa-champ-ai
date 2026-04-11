@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
-import { Send, Mic, MicOff, FileText, Phone, MessageSquarePlus, History, ArrowDown, Paperclip, X } from "lucide-react";
+import { Send, Mic, MicOff, FileText, Phone, MessageSquarePlus, History, ArrowDown, Paperclip, X, Image as ImageIcon } from "lucide-react";
 import { Globe } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -13,10 +13,9 @@ import { useGuestSession } from "@/hooks/use-guest-session";
 import ChatHistorySidebar from "@/components/ChatHistorySidebar";
 import SignupGateModal from "@/components/SignupGateModal";
 import { supabase } from "@/integrations/supabase/client";
-import heroDubai from "@/assets/hero-dubai.jpg";
-import heroParis from "@/assets/hero-paris.jpg";
-import heroLondon from "@/assets/hero-london.jpg";
-import heroChatCities from "@/assets/hero-chat-cities.jpg";
+import heroBeach1 from "@/assets/hero-beach-1.jpg";
+import heroBeach2 from "@/assets/hero-beach-2.jpg";
+import heroCity from "@/assets/hero-city.jpg";
 
 const SUGGESTED_PROMPTS = [
   "Tourist visa for UAE",
@@ -30,12 +29,6 @@ const AUTO_TYPE_PROMPTS = [
   "Documents for UK visitor visa",
   "Plan a trip to Turkey",
   "Schengen visa requirements",
-];
-
-const POPULAR_DESTINATIONS = [
-  { name: "Dubai", image: heroDubai, alt: "Dubai skyline" },
-  { name: "Paris", image: heroParis, alt: "Paris Eiffel Tower" },
-  { name: "London", image: heroLondon, alt: "London Big Ben" },
 ];
 
 /* ── Auto-typing hook ── */
@@ -93,7 +86,7 @@ const HeroSection = () => {
   const sessionIdRef = useRef<string | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
-  const { guestId, showGate, incrementCount, dismissGate, migrateToUser } = useGuestSession();
+  const { guestId, isAtCap, showGate, incrementCount, dismissGate, migrateToUser } = useGuestSession();
   const autoType = useAutoType(AUTO_TYPE_PROMPTS);
 
   const {
@@ -109,6 +102,7 @@ const HeroSection = () => {
 
   const chatActive = messages.length > 0;
 
+  // Stop auto-type when user starts typing or chat is active
   useEffect(() => {
     if (chatActive || query.length > 0) autoType.stop();
     else if (!chatActive && query.length === 0) autoType.start();
@@ -144,10 +138,7 @@ const HeroSection = () => {
       const ext = att.file.name.split(".").pop() || "bin";
       const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from("chat-attachments").upload(path, att.file);
-      if (error) {
-        toast({ title: "Upload failed", description: error.message, variant: "destructive" });
-        continue;
-      }
+      if (error) { toast({ title: "Upload failed", description: error.message, variant: "destructive" }); continue; }
       const { data: urlData } = supabase.storage.from("chat-attachments").getPublicUrl(path);
       urls.push(urlData.publicUrl);
     }
@@ -158,6 +149,7 @@ const HeroSection = () => {
     const trimmed = text.trim();
     if ((!trimmed && attachments.length === 0) || isLoading) return;
 
+    // Allow 2 free messages for guests, then require login
     if (!user) {
       if (guestMsgCount >= 2) {
         setShowSignupGate(true);
@@ -166,6 +158,7 @@ const HeroSection = () => {
       setGuestMsgCount((c) => c + 1);
     }
 
+    // Upload attachments first
     let attachmentUrls: string[] = [];
     if (attachments.length > 0) {
       setUploading(true);
@@ -174,6 +167,7 @@ const HeroSection = () => {
       setUploading(false);
     }
 
+    // Build message content with attachments
     let content = trimmed;
     if (attachmentUrls.length > 0) {
       const attachmentText = attachmentUrls.map((url) => `[Attachment](${url})`).join("\n");
@@ -230,15 +224,8 @@ const HeroSection = () => {
 
   const toggleVoice = useCallback(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) {
-      toast({ title: "Not supported", description: "Speech recognition is not supported.", variant: "destructive" });
-      return;
-    }
-    if (isListening && recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-      return;
-    }
+    if (!SR) { toast({ title: "Not supported", description: "Speech recognition is not supported.", variant: "destructive" }); return; }
+    if (isListening && recognitionRef.current) { recognitionRef.current.stop(); setIsListening(false); return; }
     const recognition = new SR();
     recognition.continuous = false;
     recognition.interimResults = true;
@@ -246,10 +233,7 @@ const HeroSection = () => {
     recognition.onresult = (e: any) => {
       const t = Array.from(e.results).map((r: any) => r[0].transcript).join("");
       setQuery(t);
-      if (e.results[0].isFinal) {
-        setIsListening(false);
-        sendMessage(t);
-      }
+      if (e.results[0].isFinal) { setIsListening(false); sendMessage(t); }
     };
     recognition.onerror = () => setIsListening(false);
     recognition.onend = () => setIsListening(false);
@@ -259,16 +243,9 @@ const HeroSection = () => {
   }, [isListening, toast]);
 
   const startNewChat = useCallback(() => {
-    setMessages([]);
-    setQuery("");
-    setIsLoading(false);
-    setHasResponse(false);
-    sessionIdRef.current = null;
-    clearActive();
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsListening(false);
-    }
+    setMessages([]); setQuery(""); setIsLoading(false); setHasResponse(false);
+    sessionIdRef.current = null; clearActive();
+    if (recognitionRef.current) { recognitionRef.current.stop(); setIsListening(false); }
   }, [clearActive]);
 
   const handleSelectSession = useCallback(async (sessionId: string) => {
@@ -279,176 +256,139 @@ const HeroSection = () => {
     setTimeout(() => scrollToBottom(), 100);
   }, [loadSession]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    sendMessage(query);
-  };
-
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); sendMessage(query); };
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage(query);
-    }
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(query); }
   };
 
   return (
     <>
       <ChatHistorySidebar
-        open={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-        sessions={sessions}
-        activeSessionId={activeSessionId}
-        onSelectSession={handleSelectSession}
-        onDeleteSession={deleteSession}
-        onFetch={fetchSessions}
-        isLoggedIn={!!user}
+        open={sidebarOpen} onClose={() => setSidebarOpen(false)}
+        sessions={sessions} activeSessionId={activeSessionId}
+        onSelectSession={handleSelectSession} onDeleteSession={deleteSession}
+        onFetch={fetchSessions} isLoggedIn={!!user}
       />
       <SignupGateModal
         open={showSignupGate || showGate}
-        onDismiss={() => {
-          setShowSignupGate(false);
-          dismissGate();
-        }}
+        onDismiss={() => { setShowSignupGate(false); dismissGate(); }}
       />
 
-      <section className="relative min-h-[90vh] overflow-hidden bg-background">
-        <div className="container relative z-10 flex flex-col items-center gap-8 px-4 py-16 lg:flex-row lg:py-24">
-          <div className="flex w-full max-w-xl flex-1 flex-col">
-            <div className="mb-2 flex items-center justify-between">
-              <Button onClick={() => setSidebarOpen(true)} variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+      <section className="relative min-h-[90vh] bg-background overflow-hidden">
+        <div className="container relative z-10 flex flex-col lg:flex-row items-center gap-8 px-4 py-16 lg:py-24">
+          {/* ── Left: Chat ── */}
+          <div className="flex-1 w-full max-w-xl flex flex-col">
+            {/* Header row */}
+            <div className="flex items-center justify-between mb-2">
+              <Button onClick={() => setSidebarOpen(true)} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5">
                 <History className="h-4 w-4" />
                 <span className="hidden sm:inline">History</span>
               </Button>
               {chatActive && (
-                <Button onClick={startNewChat} variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+                <Button onClick={startNewChat} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground gap-1.5">
                   <MessageSquarePlus className="h-4 w-4" />
                   <span className="hidden sm:inline">New Chat</span>
                 </Button>
               )}
             </div>
 
+            {/* Heading */}
             {!chatActive && (
               <div className="mb-8">
-                <h1 className="text-4xl font-extrabold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground leading-tight">
                   Your visa. Sorted in{" "}
                   <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">minutes.</span>
                 </h1>
                 <p className="mt-4 text-lg text-muted-foreground">
                   Ask me about tourist visa eligibility, documents & requirements — I'll guide you through it.
                 </p>
-
-                <div className="mt-6 flex gap-3 overflow-x-auto pb-1">
-                  {POPULAR_DESTINATIONS.map((city) => (
-                    <div key={city.name} className="flex min-w-[160px] items-center gap-3 rounded-2xl border border-border/60 bg-card/85 p-2.5 shadow-sm backdrop-blur-sm">
-                      <img
-                        src={city.image}
-                        alt={city.alt}
-                        className="h-14 w-14 rounded-xl object-cover"
-                        loading="lazy"
-                        width={120}
-                        height={120}
-                      />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{city.name}</p>
-                        <p className="text-xs text-muted-foreground">Popular destination</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             )}
 
+            {/* Chat messages */}
             {chatActive && (
-              <div className="relative mb-4 overflow-hidden rounded-[2rem] border border-border/60 bg-muted/40 shadow-xl">
-                <div
-                  className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-100"
-                  style={{ backgroundImage: `url(${heroChatCities})` }}
-                />
-                <div className="absolute inset-0 bg-background/55 backdrop-blur-[1px]" />
-                <div ref={scrollRef} className="relative max-h-[50vh] overflow-y-auto px-4 py-4 pr-2 sm:px-5">
-                  <div className="space-y-4">
-                    {messages.map((msg, i) => {
-                      const isUser = msg.role === "user";
-                      return (
-                        <div key={i} className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
-                          <Avatar className="h-8 w-8 shrink-0">
-                            <AvatarFallback className={isUser ? "bg-muted text-foreground" : "bg-primary text-primary-foreground"}>
-                              {isUser ? "👤" : <Globe className="h-4 w-4" />}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div
-                            className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm shadow-sm ${
-                              isUser
-                                ? "rounded-tr-md bg-primary text-primary-foreground"
-                                : "rounded-tl-md border border-border/60 bg-card/90 text-foreground backdrop-blur-sm"
-                            }`}
-                          >
-                            {isUser ? (
-                              <>
-                                {msg.content.match(/\[Attachment\]\((https?:\/\/[^\)]+)\)/g)?.map((match, j) => {
-                                  const url = match.match(/\((https?:\/\/[^\)]+)\)/)?.[1];
-                                  if (!url) return null;
-                                  const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-                                  return isImage ? (
-                                    <img key={j} src={url} alt="attachment" className="mb-2 max-h-40 max-w-full rounded-lg" />
-                                  ) : (
-                                    <a key={j} href={url} target="_blank" rel="noopener noreferrer" className="mb-1 flex items-center gap-1.5 text-xs underline">
-                                      <FileText className="h-3 w-3" /> Attachment
-                                    </a>
-                                  );
-                                })}
-                                <p className="whitespace-pre-wrap">{msg.content.replace(/\n?\n?\[Attachment\]\(https?:\/\/[^\)]+\)/g, "").trim()}</p>
-                              </>
-                            ) : (
-                              <div className="prose prose-sm max-w-none text-left dark:prose-invert">
-                                <ReactMarkdown>{msg.content}</ReactMarkdown>
-                              </div>
-                            )}
-                          </div>
+              <div ref={scrollRef} className="flex-1 max-h-[50vh] overflow-y-auto mb-4 pr-2">
+                <div className="space-y-4">
+                  {messages.map((msg, i) => {
+                    const isUser = msg.role === "user";
+                    return (
+                      <div key={i} className={`flex gap-3 ${isUser ? "flex-row-reverse" : ""}`}>
+                        <Avatar className="h-8 w-8 shrink-0">
+                          <AvatarFallback className={isUser ? "bg-muted text-foreground" : "bg-primary text-primary-foreground"}>
+                            {isUser ? "👤" : <Globe className="h-4 w-4" />}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm ${
+                          isUser ? "bg-primary text-primary-foreground rounded-tr-md" : "bg-muted text-foreground rounded-tl-md"
+                        }`}>
+                          {isUser ? (
+                            <>
+                              {/* Render inline images from attachments */}
+                              {msg.content.match(/\[Attachment\]\((https?:\/\/[^\)]+)\)/g)?.map((match, j) => {
+                                const url = match.match(/\((https?:\/\/[^\)]+)\)/)?.[1];
+                                if (!url) return null;
+                                const isImage = /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+                                return isImage ? (
+                                  <img key={j} src={url} alt="attachment" className="rounded-lg max-w-full max-h-40 mb-2" />
+                                ) : (
+                                  <a key={j} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-xs underline mb-1">
+                                    <FileText className="h-3 w-3" /> Attachment
+                                  </a>
+                                );
+                              })}
+                              <p className="whitespace-pre-wrap">{msg.content.replace(/\n?\n?\[Attachment\]\(https?:\/\/[^\)]+\)/g, "").trim()}</p>
+                            </>
+                          ) : (
+                            <div className="prose prose-sm max-w-none dark:prose-invert">
+                              <ReactMarkdown>{msg.content}</ReactMarkdown>
+                            </div>
+                          )}
                         </div>
-                      );
-                    })}
-                    {isLoading && messages[messages.length - 1]?.role !== "assistant" && <TypingIndicator />}
-
-                    {hasResponse && !isLoading && (
-                      <div className="flex flex-wrap gap-2 pt-2">
-                        <Button variant="outline" size="sm" className="gap-2 rounded-full bg-background/90" onClick={() => window.location.assign("/apply")}>
-                          <FileText className="h-4 w-4" /> Apply for Visa
-                        </Button>
-                        <Button variant="outline" size="sm" className="gap-2 rounded-full bg-background/90" onClick={() => window.location.assign("/book-call")}>
-                          <Phone className="h-4 w-4" /> Talk to Visa Officer
-                        </Button>
                       </div>
-                    )}
-                  </div>
+                    );
+                  })}
+                  {isLoading && messages[messages.length - 1]?.role !== "assistant" && <TypingIndicator />}
+
+                  {hasResponse && !isLoading && (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      <Button variant="outline" size="sm" className="gap-2 rounded-full" onClick={() => window.location.assign("/apply")}>
+                        <FileText className="h-4 w-4" /> Apply for Visa
+                      </Button>
+                      <Button variant="outline" size="sm" className="gap-2 rounded-full" onClick={() => window.location.assign("/book-call")}>
+                        <Phone className="h-4 w-4" /> Talk to Visa Officer
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
 
+            {/* Attachment previews */}
             {attachments.length > 0 && (
-              <div className="mb-2 flex flex-wrap gap-2">
+              <div className="flex gap-2 flex-wrap mb-2">
                 {attachments.map((att, i) => (
-                  <div key={i} className="group relative">
+                  <div key={i} className="relative group">
                     {att.preview ? (
-                      <img src={att.preview} alt={att.file.name} className="h-16 w-16 rounded-lg border border-border object-cover" />
+                      <img src={att.preview} alt={att.file.name} className="h-16 w-16 rounded-lg object-cover border border-border" />
                     ) : (
-                      <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-border bg-muted">
+                      <div className="h-16 w-16 rounded-lg border border-border bg-muted flex items-center justify-center">
                         <FileText className="h-6 w-6 text-muted-foreground" />
                       </div>
                     )}
                     <button
                       type="button"
                       onClick={() => removeAttachment(i)}
-                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+                      className="absolute -top-1.5 -right-1.5 h-5 w-5 rounded-full bg-destructive text-white flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X className="h-3 w-3" />
                     </button>
-                    <p className="mt-0.5 w-16 truncate text-[10px] text-muted-foreground">{att.file.name}</p>
+                    <p className="text-[10px] text-muted-foreground truncate w-16 mt-0.5">{att.file.name}</p>
                   </div>
                 ))}
               </div>
             )}
 
+            {/* Input box */}
             <form onSubmit={handleSubmit} className="flex w-full items-end gap-2 rounded-2xl border border-border bg-card p-3 shadow-lg">
               <input
                 ref={fileInputRef}
@@ -461,11 +401,11 @@ const HeroSection = () => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               >
                 <Paperclip className="h-5 w-5" />
               </button>
-              <div className="relative flex-1">
+              <div className="flex-1 relative">
                 <textarea
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -474,28 +414,27 @@ const HeroSection = () => {
                   placeholder=""
                   className="w-full resize-none bg-transparent px-2 py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
                 />
+                {/* Auto-typing overlay */}
                 {!query && !chatActive && attachments.length === 0 && (
-                  <div className="pointer-events-none absolute inset-0 flex items-start px-2 py-2">
+                  <div className="absolute inset-0 flex items-start px-2 py-2 pointer-events-none">
                     <span className="text-base text-muted-foreground">
                       {autoType.text}
-                      <span className="ml-0.5 inline-block h-5 w-0.5 animate-pulse bg-primary align-middle" />
+                      <span className="inline-block w-0.5 h-5 bg-primary animate-pulse ml-0.5 align-middle" />
                     </span>
                   </div>
                 )}
               </div>
               <div className="flex items-center gap-1.5 pb-1">
                 <button
-                  type="button"
-                  onClick={toggleVoice}
+                  type="button" onClick={toggleVoice}
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${
-                    isListening ? "animate-pulse bg-destructive text-white" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    isListening ? "bg-destructive text-white animate-pulse" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   }`}
                 >
                   {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </button>
                 <button
-                  type="submit"
-                  disabled={(!query.trim() && attachments.length === 0) || isLoading || uploading}
+                  type="submit" disabled={(!query.trim() && attachments.length === 0) || isLoading || uploading}
                   className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
                 >
                   <Send className="h-5 w-5" />
@@ -503,13 +442,13 @@ const HeroSection = () => {
               </div>
             </form>
 
+            {/* Suggestion chips */}
             {!chatActive && (
               <div className="mt-5 flex flex-wrap gap-2.5">
                 {SUGGESTED_PROMPTS.map((prompt) => (
                   <button
-                    key={prompt}
-                    onClick={() => sendMessage(prompt)}
-                    className="rounded-full border border-accent/30 bg-accent/15 px-5 py-2.5 text-sm text-foreground transition-all hover:border-accent/50 hover:bg-accent/25"
+                    key={prompt} onClick={() => sendMessage(prompt)}
+                    className="rounded-full bg-accent/15 border border-accent/30 px-5 py-2.5 text-sm text-foreground transition-all hover:bg-accent/25 hover:border-accent/50"
                   >
                     {prompt}
                   </button>
@@ -517,28 +456,33 @@ const HeroSection = () => {
               </div>
             )}
 
+            {/* Scroll indicator */}
             {!chatActive && (
-              <a href="#how-it-works" className="mt-8 flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground">
+              <a href="#how-it-works" className="mt-8 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
                 See how I can help you <ArrowDown className="h-4 w-4 animate-bounce" />
               </a>
             )}
           </div>
 
-          <div className="hidden flex-1 items-center justify-center lg:flex" style={{ minHeight: 480 }}>
-            <div className="relative h-full w-full">
-              <div className="absolute right-0 top-0 h-72 w-72 overflow-hidden rounded-full shadow-2xl">
-                <img src={heroDubai} alt="Dubai skyline" className="h-full w-full object-cover" width={800} height={800} />
+          {/* ── Right: Decorative bubble images ── */}
+          
+            <div className="hidden lg:flex flex-1 items-center justify-center relative" style={{ minHeight: 480 }}>
+              {/* Large top-right circle */}
+              <div className="absolute top-0 right-0 w-72 h-72 rounded-full overflow-hidden shadow-2xl">
+                <img src={heroBeach1} alt="Tropical beach" className="w-full h-full object-cover" width={800} height={800} />
               </div>
-              <div className="absolute bottom-0 left-4 h-64 w-64 overflow-hidden rounded-full shadow-2xl">
-                <img src={heroParis} alt="Paris Eiffel Tower" className="h-full w-full object-cover" loading="lazy" width={800} height={800} />
+              {/* Large bottom-left circle */}
+              <div className="absolute bottom-0 left-4 w-64 h-64 rounded-full overflow-hidden shadow-2xl">
+                <img src={heroBeach2} alt="Overwater bungalows" className="w-full h-full object-cover" width={800} height={800} />
               </div>
-              <div className="absolute right-24 top-40 h-52 w-52 overflow-hidden rounded-full shadow-xl">
-                <img src={heroLondon} alt="London Big Ben" className="h-full w-full object-cover" loading="lazy" width={800} height={800} />
+              {/* Medium center-right circle */}
+              <div className="absolute top-40 right-24 w-52 h-52 rounded-full overflow-hidden shadow-xl">
+                <img src={heroCity} alt="Dubai skyline" className="w-full h-full object-cover" loading="lazy" width={800} height={800} />
               </div>
-              <div className="absolute left-20 top-16 h-16 w-16 rounded-full bg-primary/20" />
-              <div className="absolute bottom-20 right-8 h-10 w-10 rounded-full bg-accent/20" />
+              {/* Decorative dots */}
+              <div className="absolute top-16 left-20 w-16 h-16 rounded-full bg-primary/20" />
+              <div className="absolute bottom-20 right-8 w-10 h-10 rounded-full bg-accent/20" />
             </div>
-          </div>
         </div>
       </section>
     </>
