@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import chatBg from "@/assets/chat-bg.png";
 import { Send, Globe, ArrowLeft, Info, Mic, MicOff, MessageSquarePlus, Trash2, LogOut, FileText, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
