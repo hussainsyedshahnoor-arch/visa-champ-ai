@@ -50,26 +50,39 @@ const EligibilityCheck = () => {
     if (!user) {
       setPendingSubmit(true);
       setShowSignupGate(true);
+      // Persist state for OAuth redirect
       localStorage.setItem("eligibility_return", "true");
+      localStorage.setItem("eligibility_form", JSON.stringify({ formData, selectedCountry, selectedVisaType }));
       return;
     }
     setStep(3);
   };
 
-  // When user logs in after being gated (including OAuth redirect), continue to review
+  // When user logs in after being gated (same-page login), continue to review
   useEffect(() => {
     if (user && pendingSubmit) {
       setPendingSubmit(false);
       setShowSignupGate(false);
       localStorage.removeItem("eligibility_return");
+      localStorage.removeItem("eligibility_form");
       setStep(3);
     }
   }, [user, pendingSubmit]);
 
-  // On mount, check if returning from OAuth login
+  // On mount, check if returning from OAuth login and restore form
   useEffect(() => {
     if (user && localStorage.getItem("eligibility_return") === "true") {
       localStorage.removeItem("eligibility_return");
+      const saved = localStorage.getItem("eligibility_form");
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.formData) setFormData(parsed.formData);
+          if (parsed.selectedCountry) setSelectedCountry(parsed.selectedCountry);
+          if (parsed.selectedVisaType) setSelectedVisaType(parsed.selectedVisaType);
+        } catch {}
+        localStorage.removeItem("eligibility_form");
+      }
       setStep(3);
     }
   }, [user]);
