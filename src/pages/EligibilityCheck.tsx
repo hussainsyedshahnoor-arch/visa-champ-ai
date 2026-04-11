@@ -50,19 +50,29 @@ const EligibilityCheck = () => {
     if (!user) {
       setPendingSubmit(true);
       setShowSignupGate(true);
+      localStorage.setItem("eligibility_return", "true");
       return;
     }
     setStep(3);
   };
 
-  // When user logs in after being gated, continue to review
+  // When user logs in after being gated (including OAuth redirect), continue to review
   useEffect(() => {
     if (user && pendingSubmit) {
       setPendingSubmit(false);
       setShowSignupGate(false);
+      localStorage.removeItem("eligibility_return");
       setStep(3);
     }
   }, [user, pendingSubmit]);
+
+  // On mount, check if returning from OAuth login
+  useEffect(() => {
+    if (user && localStorage.getItem("eligibility_return") === "true") {
+      localStorage.removeItem("eligibility_return");
+      setStep(3);
+    }
+  }, [user]);
 
   const [formData, setFormData] = useState({
     fullName: "",
