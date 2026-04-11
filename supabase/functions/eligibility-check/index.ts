@@ -16,9 +16,9 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const prompt = `You are Visa Champion, an expert visa eligibility evaluator for Pakistani passport holders.
+    const prompt = `You are Visa Champion, an expert visa eligibility evaluator for Pakistani passport holders applying for tourist visas.
 
-Evaluate this tourist visa application and provide a detailed, profile-aware assessment.
+Evaluate this application with STRICT, REALISTIC scoring based on the detailed rules below.
 
 **Destination:** ${countryName}
 **Visa Type:** ${visaTypeName}
@@ -41,11 +41,12 @@ Evaluate this tourist visa application and provide a detailed, profile-aware ass
 - Closing Balance (PKR): ${formData.closingBalance || formData.bankBalance || "Not specified"}
 - Balance Maintained Consistently (no sudden deposits): ${formData.maintainedBalance ? "Yes" : "No"}
 - Has Active Credit Card: ${formData.hasCreditCard ? "Yes" : "No"}
+- Credit Card Bills Paid On Time: ${formData.creditCardPaidOnTime || "N/A"}
 
 **Travel History:**
 - Has Travel History: ${formData.hasTravelHistory ? "Yes" : "No"}
 - Previous Countries Visited: ${formData.previousCountries || "None"}
-- Travel Frequency: ${formData.travelFrequency || "Not specified"}
+- Travel Frequency (trips per year): ${formData.travelFrequency || "Not specified"}
 - Previously Visited Destination Country: ${formData.previousVisitToDestination ? "Yes" : "No"}
 - Purpose of Previous Travels: ${formData.travelPurposeHistory || "N/A"}
 - Previous Trips Were: ${formData.travelledSoloOrFamily || "N/A"}
@@ -53,6 +54,7 @@ Evaluate this tourist visa application and provide a detailed, profile-aware ass
 **Ties to Home Country:**
 - Owns Property in Pakistan (own name): ${formData.ownsProperty ? "Yes" : "No"}
 - Property Details: ${formData.propertyDetails || "N/A"}
+- Property Documentation Clear: ${formData.propertyDocsClear || "N/A"}
 - Close Family in Pakistan: ${formData.closeFamilyInPakistan || "Not specified"}
 
 **Other Nationality/Residency:**
@@ -60,63 +62,133 @@ Evaluate this tourist visa application and provide a detailed, profile-aware ass
 - Has Residency in Another Country: ${formData.hasOtherResidency ? "Yes — " + (formData.otherResidencyCountry || "Not specified") : "No"}
 
 **Required Documents for this visa:**
-${documents.map((d: any) => `- ${d.document_name} (${d.is_mandatory ? "Mandatory" : "Optional"}): ${d.description}`).join("\n")}
+${documents.map((d: any) => \`- \${d.document_name} (\${d.is_mandatory ? "Mandatory" : "Optional"}): \${d.description}\`).join("\n")}
 
 **Eligibility Criteria:**
-${criteria.map((c: any) => `- ${c.criteria_name}: ${c.criteria_description}${c.min_value ? " (Min: " + c.min_value + ")" : ""} [${c.is_mandatory ? "Required" : "Recommended"}]`).join("\n")}
+${criteria.map((c: any) => \`- \${c.criteria_name}: \${c.criteria_description}\${c.min_value ? " (Min: " + c.min_value + ")" : ""} [\${c.is_mandatory ? "Required" : "Recommended"}]\`).join("\n")}
 
-SCORING INSTRUCTIONS — YOU MUST FOLLOW THIS STRICTLY:
+===== DETAILED SCORING RULES — FOLLOW STRICTLY =====
 
-The score MUST reflect the TRUE difficulty of getting a visa. Be STRICT and REALISTIC. A score of 80+ means HIGH chance — reserve this ONLY for genuinely strong profiles.
+**1. TRAVEL HISTORY ANALYSIS (Major Factor)**
 
-**Score Bands (STRICT):**
-- 80-95: HIGH CHANCE — Reserved for profiles with MOST of: strong finances (maintained balance, high closing balance, tax filer), extensive travel history (multiple countries, frequent), strong ties (property in own name, spouse+children in Pakistan), stable employment/business, prior visit to destination country
+A) Previous Visit Quality:
+- Visited SAME destination country before = STRONG positive (+10-15)
+- Visited selective/hard countries (EU/Schengen, UK, USA, Canada, Australia, China, Russia) = STRONG positive (+10-15 per region)
+- Only visited easy visa countries (Gulf: UAE, Qatar, Bahrain, Oman; Asia: Malaysia, Thailand, Turkey, Sri Lanka) = MINOR positive (+3-5). These do NOT prove strong travel credibility for western country applications.
+- No travel history at all = SIGNIFICANT negative (-15 to -20)
+
+B) Travel Frequency:
+- 4+ trips per year = Very strong frequent traveler (+10)
+- 2-3 trips per year = Moderate traveler (+5)
+- 1 trip per year = Occasional (+2)
+- Rare/no travel = Negative (-5 to -10)
+
+C) Purpose of Previous Travel:
+- Business travel with documentation = Strong positive
+- Leisure/family vacation with return pattern = Moderate positive
+- Meeting family abroad (especially in destination country) = CAUTION — could signal immigration intent
+
+D) Solo vs Family Travel:
+- Customer has strong travel history + travels solo + has dependents/property at home = GOOD (shows intent to return)
+- Married, travels with 1 kid, leaves rest of family home = GOOD strategy for western countries
+- Travelling with COMPLETE family (spouse + all kids) to western country + weak home ties = RED FLAG (-10 to -15). Consulates may suspect asylum/overstay intent.
+- Single + young + no travel + no property = VERY WEAK for western countries (score 15-35 MAX)
+
+**2. FINANCIAL DOCUMENT ANALYSIS (Critical Factor)**
+
+A) Bank Statement:
+- Must cover last 6-12 months with clear, justified income
+- 3 months statement = WEAK (-10)
+- 6 months = Acceptable
+- 12 months = Strong (+5)
+- Income source must be clearly identifiable (salary credits, business deposits)
+
+B) Closing Balance (PER PERSON traveling):
+- For Malaysia, Thailand, Singapore, Indonesia: PKR 5-15 lacs per person required
+- For USA, Canada, UK, EU, Australia: minimum PKR 15 lacs per person required
+- Balance BELOW these thresholds = MAJOR negative (-15 to -20)
+- Balance meeting threshold = Neutral
+- Balance significantly above threshold with consistent history = Positive (+5-10)
+
+C) Balance Maintenance:
+- Maintained consistently over 6-12 months = STRONG positive (+10)
+- Sudden large deposits (maintainedBalance = No) = MAJOR RED FLAG (-15). Consulates see this as "show money" and it severely hurts chances.
+- Unjustified transactions = Negative (-10)
+
+D) Credit Card:
+- Has credit card + pays bills on time = Shows financial discipline (+5)
+- Has credit card but irregular payments = Minor negative
+- No credit card = Minor negative (-3)
+
+**3. STRONG TIES TO HOME COUNTRY (Critical for Western Countries)**
+
+A) Close Family:
+- MARRIED + travelling with full family to western country = WEAK TIES. If spouse + all kids are travelling, who is left? This raises overstay/asylum suspicion. Score penalty -10 to -15.
+- MARRIED + travelling alone or with 1 kid + spouse/other kids/parents at home = STRONG TIES (+10). This satisfies consulates that customer will return.
+- MARRIED + later applying for remaining family = SMART strategy, shows genuine travel intent
+- UNMARRIED: age, travel history, property, job/business, family dependents become CRITICAL factors
+
+B) Property (Own Name):
+- Property (home/plot/commercial) in CUSTOMER'S OWN NAME with clear documentation = Strong positive (+10)
+- Property in FAMILY name (father/brother etc) = WEAK positive (+2-3). Not convincing alone.
+- No property = Moderate negative (-5 to -8)
+- IMPORTANT NOTE: Property alone does NOT guarantee strong ties. Customer can sell property later with help of family/friends if they overstay. Property is ONE factor, not a deciding factor.
+
+C) Business Type & Model:
+- Clear, legitimate, registered business with documentation = Strong positive (+10)
+- Business must be justifiable — no ambiguous or potentially illegal activities
+- Freelance/unregistered = Weaker (+3)
+- Customer must be able to clearly explain what they do
+
+D) Clear Source of Income:
+- Salaried with documented employment = Good (+5)
+- Salary must be sufficient to justify travel expenses
+- Business income must be documented and match bank statements
+- Unclear/undocumented income = RED FLAG (-10)
+
+E) Tax Filing:
+- Active tax filer with FBR = Positive (+5)
+- NOT a tax filer = Negative (-5 to -8). For employed/business profiles this is a significant concern.
+
+**SCORE BANDS (STRICT):**
+- 80-95: HIGH CHANCE — ONLY for genuinely strong profiles with MOST of: strong finances (maintained, above threshold), extensive quality travel history (selective countries), strong home ties (family staying behind, property in own name), stable documented income, tax filer
 - 50-79: MEDIUM CHANCE — Decent profiles with some strengths but notable gaps
 - 20-49: LOW CHANCE — Weak profiles with multiple red flags
 - 0-19: VERY LOW CHANCE — Major disqualifying factors
 
-**KEY SCORING RULES:**
-- Travelling with spouse alone does NOT make it a strong profile. It is only ONE factor.
-- Being married is NOT enough for a high score without strong financial + travel evidence.
-- Sudden bank deposits (maintainedBalance = No) is a RED FLAG, penalize by 10-15 points.
-- No tax filing is a negative for employed/business profiles.
-- No credit card = minor negative.
-- No travel history = significant negative (-15 to -20 points from baseline).
-- No property = moderate negative.
-- No close family = moderate negative.
-- Single + young + unemployed/student + no travel + no property = score should be 15-35 MAX.
-- Has residency/nationality in a Western/developed country = SIGNIFICANT BOOST (+15-25 points).
-
-**Financial Document Analysis (CRITICAL):**
-- Bank statement of only 3 months = weak, 6 months = acceptable, 12 months = strong
-- Closing balance must match destination country's expected funds
-- Maintained/consistent balance is MORE important than a high closing balance
-- Credit card ownership shows financial stability
-
-**Travel History Analysis:**
-- Previous visit to SAME destination country = strong positive
-- Frequent traveller (4+/year) = very strong
-- Travel with family historically = moderate positive
-- Only visited visa-free/easy countries (e.g., Malaysia, Turkey) = less impactful than Schengen/US/UK visits
+**CRITICAL RULES:**
+- Travelling with spouse alone does NOT make it a strong profile
+- Being married is NOT enough for a high score
+- Having property + full family travelling = property advantage is NEGATED
+- Gulf/easy country travel does NOT count as strong travel history for western country applications
+- A married person + full family + no strong travel history + no property = score 25-40 MAX
+- Single + young + unemployed/student + no travel + no property = score 15-35 MAX
+- Has residency/nationality in Western/developed country = SIGNIFICANT BOOST (+15-25)
 
 Provide your assessment in this format:
 1. **Eligibility Score:** X/100
 2. **Applicant Profile:** (e.g., "Single traveller with weak ties" or "Family traveller with strong ties")
 3. **Verdict:** (High Chance / Medium Chance / Low Chance)
-4. **Strengths:** (bullet points of strong aspects)
-5. **Weaknesses:** (bullet points of concerns)
-6. **Missing Documents:** (list any they likely need to prepare)
-7. **Tips to Improve Chances:** (actionable advice specific to their profile type)
+4. **Strengths:** (bullet points)
+5. **Weaknesses:** (bullet points)
+6. **Missing Documents:** (list any they likely need)
+7. **Tips to Improve Chances:** (actionable advice specific to their profile)
 8. **Estimated Processing Time:** based on the visa type
 
-CRITICAL RULES:
+**MANDATORY DISCLAIMER — Always include at the end:**
+
+⚠️ **Disclaimer:**
+• This assessment is based on expert analysis and AI evaluation of your profile.
+• These scores and recommendations are estimations only.
+• There are still chances of rejection as the final decision rests entirely with the consulate or embassy. Visa outcomes depend on individual profiles and are decided on a case-by-case basis.
+• This is not legal advice. We recommend consulting with a qualified immigration consultant for personalized guidance.
+
+CRITICAL OUTPUT RULES:
 - Do NOT mention any pricing, fees, or costs
 - Do NOT share website links or URLs
 - Do NOT mention where to apply
 - Focus only on eligibility evaluation and guidance
-- Be REALISTIC — do not sugarcoat weak profiles
-- A married person travelling with spouse but no travel history, no property, low balance = score should be 35-50, NOT 70+
-- End with: "This is AI guidance based on expert analysis, not legal advice. Final decisions rest with the consulate/embassy."`;
+- Be REALISTIC — do not sugarcoat weak profiles`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
