@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import chatBg from "@/assets/chat-bg.png";
 import { Send, Globe, ArrowLeft, Info, Mic, MicOff, MessageSquarePlus, Trash2, LogOut, FileText, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -293,7 +294,7 @@ const Chat = () => {
         </header>
 
         {/* Messages */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto">
+        <div ref={scrollRef} className="flex-1 overflow-y-auto" style={{ backgroundImage: `url(${chatBg})`, backgroundRepeat: 'repeat', backgroundSize: '200px' }}>
           <div className="mx-auto max-w-3xl px-4 py-6">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
