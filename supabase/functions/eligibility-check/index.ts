@@ -30,15 +30,34 @@ Evaluate this tourist visa application and provide a detailed, profile-aware ass
 - Travelling With: ${formData.travellingWith || "Solo"}
 - Number of Dependents: ${formData.numberOfDependents || "0"}
 - Employment Status: ${formData.employmentStatus}
+- Business Type/Model: ${formData.businessType || "N/A"}
+- Source of Income: ${formData.incomeSource || "Not specified"}
 - Monthly Income (PKR): ${formData.monthlyIncome}
-- Bank Balance (PKR): ${formData.bankBalance}
+- Tax Filer (FBR): ${formData.isTaxFiler ? "Yes" : "No"}
+- Purpose of Visit: ${formData.purposeOfVisit}
+
+**Financial Documents:**
+- Bank Statement Duration: ${formData.bankStatementMonths || "Not specified"} months
+- Closing Balance (PKR): ${formData.closingBalance || formData.bankBalance || "Not specified"}
+- Balance Maintained Consistently (no sudden deposits): ${formData.maintainedBalance ? "Yes" : "No"}
+- Has Active Credit Card: ${formData.hasCreditCard ? "Yes" : "No"}
+
+**Travel History:**
 - Has Travel History: ${formData.hasTravelHistory ? "Yes" : "No"}
 - Previous Countries Visited: ${formData.previousCountries || "None"}
-- Owns Property in Pakistan: ${formData.ownsProperty ? "Yes" : "No"}
+- Travel Frequency: ${formData.travelFrequency || "Not specified"}
+- Previously Visited Destination Country: ${formData.previousVisitToDestination ? "Yes" : "No"}
+- Purpose of Previous Travels: ${formData.travelPurposeHistory || "N/A"}
+- Previous Trips Were: ${formData.travelledSoloOrFamily || "N/A"}
+
+**Ties to Home Country:**
+- Owns Property in Pakistan (own name): ${formData.ownsProperty ? "Yes" : "No"}
+- Property Details: ${formData.propertyDetails || "N/A"}
+- Close Family in Pakistan: ${formData.closeFamilyInPakistan || "Not specified"}
+
+**Other Nationality/Residency:**
 - Has Other Nationality/Passport: ${formData.hasOtherNationality ? "Yes — " + (formData.otherNationality || "Not specified") : "No"}
 - Has Residency in Another Country: ${formData.hasOtherResidency ? "Yes — " + (formData.otherResidencyCountry || "Not specified") : "No"}
-- Ties to Home Country: ${formData.hasReturnTies || "Not specified"}
-- Purpose of Visit: ${formData.purposeOfVisit}
 
 **Required Documents for this visa:**
 ${documents.map((d: any) => `- ${d.document_name} (${d.is_mandatory ? "Mandatory" : "Optional"}): ${d.description}`).join("\n")}
@@ -46,19 +65,39 @@ ${documents.map((d: any) => `- ${d.document_name} (${d.is_mandatory ? "Mandatory
 **Eligibility Criteria:**
 ${criteria.map((c: any) => `- ${c.criteria_name}: ${c.criteria_description}${c.min_value ? " (Min: " + c.min_value + ")" : ""} [${c.is_mandatory ? "Required" : "Recommended"}]`).join("\n")}
 
-SCORING INSTRUCTIONS — YOU MUST FOLLOW THIS:
-The score must heavily factor in the applicant's PROFILE TYPE and TIES to home country. Two applicants with similar finances but different profiles must get VERY different scores:
+SCORING INSTRUCTIONS — YOU MUST FOLLOW THIS STRICTLY:
 
-**Profile Risk Matrix:**
-- Single, young (18-30), unemployed/student, no property, no travel history, no dependents = HIGH RISK (score 15-35)
-- Single, employed, some travel history, no property = MODERATE-HIGH RISK (score 30-50)
-- Married, employed, property owner, travel history, travelling with family = LOW RISK (score 60-85)
-- Family traveller, property owner, strong income, prior visa stamps, other residency/nationality = VERY LOW RISK (score 75-95)
-- Has residency/nationality in a Western/developed country = SIGNIFICANT BOOST (+15-25 points)
+The score MUST reflect the TRUE difficulty of getting a visa. Be STRICT and REALISTIC. A score of 80+ means HIGH chance — reserve this ONLY for genuinely strong profiles.
 
-**Ties to Home Country (critical factor):**
-- Strong ties: owns property, has family/dependents in Pakistan, stable long-term employment, business owner = POSITIVE
-- Weak ties: single, no property, no dependents, recently employed/unemployed, student = NEGATIVE
+**Score Bands (STRICT):**
+- 80-95: HIGH CHANCE — Reserved for profiles with MOST of: strong finances (maintained balance, high closing balance, tax filer), extensive travel history (multiple countries, frequent), strong ties (property in own name, spouse+children in Pakistan), stable employment/business, prior visit to destination country
+- 50-79: MEDIUM CHANCE — Decent profiles with some strengths but notable gaps
+- 20-49: LOW CHANCE — Weak profiles with multiple red flags
+- 0-19: VERY LOW CHANCE — Major disqualifying factors
+
+**KEY SCORING RULES:**
+- Travelling with spouse alone does NOT make it a strong profile. It is only ONE factor.
+- Being married is NOT enough for a high score without strong financial + travel evidence.
+- Sudden bank deposits (maintainedBalance = No) is a RED FLAG, penalize by 10-15 points.
+- No tax filing is a negative for employed/business profiles.
+- No credit card = minor negative.
+- No travel history = significant negative (-15 to -20 points from baseline).
+- No property = moderate negative.
+- No close family = moderate negative.
+- Single + young + unemployed/student + no travel + no property = score should be 15-35 MAX.
+- Has residency/nationality in a Western/developed country = SIGNIFICANT BOOST (+15-25 points).
+
+**Financial Document Analysis (CRITICAL):**
+- Bank statement of only 3 months = weak, 6 months = acceptable, 12 months = strong
+- Closing balance must match destination country's expected funds
+- Maintained/consistent balance is MORE important than a high closing balance
+- Credit card ownership shows financial stability
+
+**Travel History Analysis:**
+- Previous visit to SAME destination country = strong positive
+- Frequent traveller (4+/year) = very strong
+- Travel with family historically = moderate positive
+- Only visited visa-free/easy countries (e.g., Malaysia, Turkey) = less impactful than Schengen/US/UK visits
 
 Provide your assessment in this format:
 1. **Eligibility Score:** X/100
@@ -76,7 +115,8 @@ CRITICAL RULES:
 - Do NOT mention where to apply
 - Focus only on eligibility evaluation and guidance
 - Be REALISTIC — do not sugarcoat weak profiles
-- End with: "This is AI guidance, not legal advice."`;
+- A married person travelling with spouse but no travel history, no property, low balance = score should be 35-50, NOT 70+
+- End with: "This is AI guidance based on expert analysis, not legal advice. Final decisions rest with the consulate/embassy."`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -113,7 +153,6 @@ CRITICAL RULES:
     const data = await response.json();
     const analysis = data.choices?.[0]?.message?.content || "Unable to generate analysis.";
 
-    // Extract score from analysis
     const scoreMatch = analysis.match(/(\d{1,3})\/100/);
     const score = scoreMatch ? parseInt(scoreMatch[1]) : null;
 
