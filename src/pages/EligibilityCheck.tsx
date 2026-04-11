@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import { Globe, ArrowLeft, CheckCircle, AlertCircle, Loader2, FileText, Phone } from "lucide-react";
+import { Globe, ArrowLeft, CheckCircle, AlertCircle, Loader2, FileText, Phone, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,7 @@ const EligibilityCheck = () => {
   const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [showSignupGate, setShowSignupGate] = useState(false);
+  const [pendingSubmit, setPendingSubmit] = useState(false);
   const [countries, setCountries] = useState<Country[]>([]);
   const [visaTypes, setVisaTypes] = useState<VisaType[]>([]);
   const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "");
@@ -47,11 +48,21 @@ const EligibilityCheck = () => {
 
   const handleNextToReview = () => {
     if (!user) {
+      setPendingSubmit(true);
       setShowSignupGate(true);
       return;
     }
     setStep(3);
   };
+
+  // When user logs in after being gated, continue to review
+  useEffect(() => {
+    if (user && pendingSubmit) {
+      setPendingSubmit(false);
+      setShowSignupGate(false);
+      setStep(3);
+    }
+  }, [user, pendingSubmit]);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -61,7 +72,17 @@ const EligibilityCheck = () => {
     bankBalance: "",
     hasTravelHistory: false,
     previousCountries: "",
+    travelFrequency: "",
+    previousVisitToDestination: false,
+    travelPurposeHistory: "",
+    travelledSoloOrFamily: "",
     ownsProperty: false,
+    propertyDetails: "",
+    closeFamilyInPakistan: "",
+    bankStatementMonths: "",
+    closingBalance: "",
+    maintainedBalance: false,
+    hasCreditCard: false,
     maritalStatus: "",
     purposeOfVisit: "",
     travellingWith: "",
@@ -70,7 +91,9 @@ const EligibilityCheck = () => {
     otherNationality: "",
     hasOtherResidency: false,
     otherResidencyCountry: "",
-    hasReturnTies: "",
+    businessType: "",
+    incomeSource: "",
+    isTaxFiler: false,
   });
 
   useEffect(() => {
@@ -143,9 +166,15 @@ const EligibilityCheck = () => {
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 70) return "text-green-600 dark:text-green-400";
+    if (score >= 80) return "text-green-600 dark:text-green-400";
     if (score >= 40) return "text-amber-600 dark:text-amber-400";
     return "text-red-600 dark:text-red-400";
+  };
+
+  const getScoreLabel = (score: number) => {
+    if (score >= 80) return "High Chance ✅";
+    if (score >= 40) return "Medium Chance ⚠️";
+    return "Low Chance ❌";
   };
 
   return (
@@ -237,90 +266,196 @@ const EligibilityCheck = () => {
             <CardHeader>
               <CardTitle>Tell us about yourself 📋</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 space-y-2">
-                  <Label>Full Name</Label>
-                  <Input value={formData.fullName} onChange={(e) => updateForm("fullName", e.target.value)} placeholder="Muhammad Ali" />
+            <CardContent className="space-y-6">
+              {/* Basic Info */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-foreground border-b pb-1">Basic Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="col-span-2 space-y-2">
+                    <Label>Full Name</Label>
+                    <Input value={formData.fullName} onChange={(e) => updateForm("fullName", e.target.value)} placeholder="Muhammad Ali" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Age</Label>
+                    <Input type="number" value={formData.age} onChange={(e) => updateForm("age", e.target.value)} placeholder="30" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Marital Status</Label>
+                    <Select value={formData.maritalStatus} onValueChange={(v) => updateForm("maritalStatus", v)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="single">Single</SelectItem>
+                        <SelectItem value="married">Married</SelectItem>
+                        <SelectItem value="divorced">Divorced</SelectItem>
+                        <SelectItem value="widowed">Widowed</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Travelling With</Label>
+                    <Select value={formData.travellingWith} onValueChange={(v) => updateForm("travellingWith", v)}>
+                      <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="solo">Solo</SelectItem>
+                        <SelectItem value="spouse">With Spouse</SelectItem>
+                        <SelectItem value="family">With Family (Spouse + Children)</SelectItem>
+                        <SelectItem value="group">Group / Friends</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Number of Dependents</Label>
+                    <Input type="number" value={formData.numberOfDependents} onChange={(e) => updateForm("numberOfDependents", e.target.value)} placeholder="0" />
+                  </div>
                 </div>
                 <div className="space-y-2">
-                  <Label>Age</Label>
-                  <Input type="number" value={formData.age} onChange={(e) => updateForm("age", e.target.value)} placeholder="30" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Marital Status</Label>
-                  <Select value={formData.maritalStatus} onValueChange={(v) => updateForm("maritalStatus", v)}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="single">Single</SelectItem>
-                      <SelectItem value="married">Married</SelectItem>
-                      <SelectItem value="divorced">Divorced</SelectItem>
-                      <SelectItem value="widowed">Widowed</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <Label>Purpose of Visit</Label>
+                  <Input value={formData.purposeOfVisit} onChange={(e) => updateForm("purposeOfVisit", e.target.value)} placeholder="Tourism, family visit, sightseeing..." />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Employment Status</Label>
-                <Select value={formData.employmentStatus} onValueChange={(v) => updateForm("employmentStatus", v)}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="employed">Employed (Full-time)</SelectItem>
-                    <SelectItem value="self-employed">Self-Employed / Business Owner</SelectItem>
-                    <SelectItem value="part-time">Part-time</SelectItem>
-                    <SelectItem value="student">Student</SelectItem>
-                    <SelectItem value="retired">Retired</SelectItem>
-                    <SelectItem value="unemployed">Unemployed</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Monthly Income (PKR)</Label>
-                  <Input type="number" value={formData.monthlyIncome} onChange={(e) => updateForm("monthlyIncome", e.target.value)} placeholder="100,000" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Bank Balance (PKR)</Label>
-                  <Input type="number" value={formData.bankBalance} onChange={(e) => updateForm("bankBalance", e.target.value)} placeholder="500,000" />
-                </div>
-              </div>
-
-              <div className="space-y-3">
+              {/* Travel History */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-foreground border-b pb-1">Travel History</h3>
                 <div className="flex items-center gap-3">
                   <input type="checkbox" id="travel" checked={formData.hasTravelHistory} onChange={(e) => updateForm("hasTravelHistory", e.target.checked)} className="rounded" />
                   <Label htmlFor="travel">I have previous international travel history</Label>
                 </div>
                 {formData.hasTravelHistory && (
-                  <Input value={formData.previousCountries} onChange={(e) => updateForm("previousCountries", e.target.value)} placeholder="e.g., UAE, Turkey, Malaysia" />
+                  <div className="space-y-3 pl-1">
+                    <div className="space-y-2">
+                      <Label>Countries Previously Visited</Label>
+                      <Input value={formData.previousCountries} onChange={(e) => updateForm("previousCountries", e.target.value)} placeholder="e.g., UAE, Turkey, Malaysia" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Travel Frequency</Label>
+                      <Select value={formData.travelFrequency} onValueChange={(v) => updateForm("travelFrequency", v)}>
+                        <SelectTrigger><SelectValue placeholder="How often?" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="first-time">First Time</SelectItem>
+                          <SelectItem value="once-a-year">Once a Year</SelectItem>
+                          <SelectItem value="2-3-times-year">2-3 Times a Year</SelectItem>
+                          <SelectItem value="frequent">Frequent Traveller (4+/year)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <input type="checkbox" id="prevVisit" checked={formData.previousVisitToDestination} onChange={(e) => updateForm("previousVisitToDestination", e.target.checked)} className="rounded" />
+                      <Label htmlFor="prevVisit">I have previously visited this destination country</Label>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Purpose of Previous Travels</Label>
+                      <Input value={formData.travelPurposeHistory} onChange={(e) => updateForm("travelPurposeHistory", e.target.value)} placeholder="e.g., tourism, business, family visit" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Previous Trips Were</Label>
+                      <Select value={formData.travelledSoloOrFamily} onValueChange={(v) => updateForm("travelledSoloOrFamily", v)}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="solo">Solo</SelectItem>
+                          <SelectItem value="with-family">With Family</SelectItem>
+                          <SelectItem value="mixed">Mix of Solo & Family</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 )}
-                <div className="flex items-center gap-3">
-                  <input type="checkbox" id="property" checked={formData.ownsProperty} onChange={(e) => updateForm("ownsProperty", e.target.checked)} className="rounded" />
-                  <Label htmlFor="property">I own property in Pakistan</Label>
-                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* Financial Documents */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-foreground border-b pb-1">Financial Documents</h3>
                 <div className="space-y-2">
-                  <Label>Travelling With</Label>
-                  <Select value={formData.travellingWith} onValueChange={(v) => updateForm("travellingWith", v)}>
+                  <Label>Employment Status</Label>
+                  <Select value={formData.employmentStatus} onValueChange={(v) => updateForm("employmentStatus", v)}>
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="solo">Solo</SelectItem>
-                      <SelectItem value="spouse">With Spouse</SelectItem>
-                      <SelectItem value="family">With Family (Spouse + Children)</SelectItem>
-                      <SelectItem value="group">Group / Friends</SelectItem>
+                      <SelectItem value="employed">Employed (Full-time)</SelectItem>
+                      <SelectItem value="self-employed">Self-Employed / Business Owner</SelectItem>
+                      <SelectItem value="part-time">Part-time</SelectItem>
+                      <SelectItem value="student">Student</SelectItem>
+                      <SelectItem value="retired">Retired</SelectItem>
+                      <SelectItem value="unemployed">Unemployed</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+                {(formData.employmentStatus === "self-employed") && (
+                  <div className="space-y-2">
+                    <Label>Business Type / Model</Label>
+                    <Input value={formData.businessType} onChange={(e) => updateForm("businessType", e.target.value)} placeholder="e.g., IT Services, Import/Export, Restaurant" />
+                  </div>
+                )}
                 <div className="space-y-2">
-                  <Label>Number of Dependents</Label>
-                  <Input type="number" value={formData.numberOfDependents} onChange={(e) => updateForm("numberOfDependents", e.target.value)} placeholder="0" />
+                  <Label>Source of Income</Label>
+                  <Input value={formData.incomeSource} onChange={(e) => updateForm("incomeSource", e.target.value)} placeholder="e.g., Salary, Business profit, Rental income, Freelancing" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Monthly Income (PKR)</Label>
+                    <Input type="number" value={formData.monthlyIncome} onChange={(e) => updateForm("monthlyIncome", e.target.value)} placeholder="100,000" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Bank Closing Balance (PKR)</Label>
+                    <Input type="number" value={formData.closingBalance} onChange={(e) => updateForm("closingBalance", e.target.value)} placeholder="500,000" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label>Bank Statement Duration</Label>
+                  <Select value={formData.bankStatementMonths} onValueChange={(v) => updateForm("bankStatementMonths", v)}>
+                    <SelectTrigger><SelectValue placeholder="How many months?" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="3">3 Months</SelectItem>
+                      <SelectItem value="6">6 Months</SelectItem>
+                      <SelectItem value="12">12 Months</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" id="maintained" checked={formData.maintainedBalance} onChange={(e) => updateForm("maintainedBalance", e.target.checked)} className="rounded" />
+                  <Label htmlFor="maintained">Balance was maintained consistently (no sudden deposits)</Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" id="creditCard" checked={formData.hasCreditCard} onChange={(e) => updateForm("hasCreditCard", e.target.checked)} className="rounded" />
+                  <Label htmlFor="creditCard">I have an active credit card</Label>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" id="taxFiler" checked={formData.isTaxFiler} onChange={(e) => updateForm("isTaxFiler", e.target.checked)} className="rounded" />
+                  <Label htmlFor="taxFiler">I am a registered tax filer (FBR)</Label>
                 </div>
               </div>
 
-              <div className="space-y-3">
+              {/* Strong Ties to Home Country */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-foreground border-b pb-1">Ties to Home Country</h3>
+                <div className="flex items-center gap-3">
+                  <input type="checkbox" id="property" checked={formData.ownsProperty} onChange={(e) => updateForm("ownsProperty", e.target.checked)} className="rounded" />
+                  <Label htmlFor="property">I own property in Pakistan (in my own name)</Label>
+                </div>
+                {formData.ownsProperty && (
+                  <div className="space-y-2 pl-1">
+                    <Label>Property Details</Label>
+                    <Input value={formData.propertyDetails} onChange={(e) => updateForm("propertyDetails", e.target.value)} placeholder="e.g., House in Lahore, Plot in DHA, Shop in Karachi" />
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label>Close Family in Pakistan</Label>
+                  <Select value={formData.closeFamilyInPakistan} onValueChange={(v) => updateForm("closeFamilyInPakistan", v)}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="spouse-children">Spouse & Children living here</SelectItem>
+                      <SelectItem value="parents-siblings">Parents & Siblings living here</SelectItem>
+                      <SelectItem value="extended">Extended family only</SelectItem>
+                      <SelectItem value="none">No close family in Pakistan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* Other Nationality / Residency */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-foreground border-b pb-1">Other Nationality / Residency</h3>
                 <div className="flex items-center gap-3">
                   <input type="checkbox" id="otherNationality" checked={formData.hasOtherNationality} onChange={(e) => updateForm("hasOtherNationality", e.target.checked)} className="rounded" />
                   <Label htmlFor="otherNationality">I hold another nationality / passport</Label>
@@ -337,19 +472,11 @@ const EligibilityCheck = () => {
                 )}
               </div>
 
-
-
-
-              <div className="space-y-2">
-                <Label>Purpose of Visit</Label>
-                <Input value={formData.purposeOfVisit} onChange={(e) => updateForm("purposeOfVisit", e.target.value)} placeholder="Tourism, family visit, sightseeing..." />
-              </div>
-
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setStep(1)} className="flex-1">← Back</Button>
                 <Button
                   onClick={handleNextToReview}
-                  disabled={!formData.fullName || !formData.employmentStatus || !formData.bankBalance}
+                  disabled={!formData.fullName || !formData.employmentStatus || !formData.closingBalance}
                   className="flex-1"
                 >
                   Next →
@@ -372,21 +499,30 @@ const EligibilityCheck = () => {
                 <hr />
                 <div className="flex justify-between"><span className="text-muted-foreground">Name</span><span className="font-medium">{formData.fullName}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Age</span><span className="font-medium">{formData.age}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Employment</span><span className="font-medium capitalize">{formData.employmentStatus}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Monthly Income</span><span className="font-medium">PKR {Number(formData.monthlyIncome).toLocaleString()}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Bank Balance</span><span className="font-medium">PKR {Number(formData.bankBalance).toLocaleString()}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Travel History</span><span className="font-medium">{formData.hasTravelHistory ? "Yes" : "No"}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Property Owner</span><span className="font-medium">{formData.ownsProperty ? "Yes" : "No"}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Marital Status</span><span className="font-medium capitalize">{formData.maritalStatus}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">Travelling With</span><span className="font-medium capitalize">{formData.travellingWith || "Solo"}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">Dependents</span><span className="font-medium">{formData.numberOfDependents || "0"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Employment</span><span className="font-medium capitalize">{formData.employmentStatus}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Income Source</span><span className="font-medium">{formData.incomeSource || "N/A"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Monthly Income</span><span className="font-medium">PKR {Number(formData.monthlyIncome).toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Bank Closing Balance</span><span className="font-medium">PKR {Number(formData.closingBalance).toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Balance Maintained</span><span className="font-medium">{formData.maintainedBalance ? "Yes" : "No"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Credit Card</span><span className="font-medium">{formData.hasCreditCard ? "Yes" : "No"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Tax Filer</span><span className="font-medium">{formData.isTaxFiler ? "Yes" : "No"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Travel History</span><span className="font-medium">{formData.hasTravelHistory ? "Yes" : "No"}</span></div>
+                {formData.hasTravelHistory && (
+                  <>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Travel Frequency</span><span className="font-medium capitalize">{formData.travelFrequency?.replace(/-/g, " ") || "N/A"}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Visited Destination Before</span><span className="font-medium">{formData.previousVisitToDestination ? "Yes" : "No"}</span></div>
+                  </>
+                )}
+                <div className="flex justify-between"><span className="text-muted-foreground">Property Owner</span><span className="font-medium">{formData.ownsProperty ? "Yes" : "No"}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Close Family in Pakistan</span><span className="font-medium capitalize">{formData.closeFamilyInPakistan?.replace(/-/g, " ") || "N/A"}</span></div>
                 {formData.hasOtherNationality && (
                   <div className="flex justify-between"><span className="text-muted-foreground">Other Nationality</span><span className="font-medium">{formData.otherNationality}</span></div>
                 )}
                 {formData.hasOtherResidency && (
                   <div className="flex justify-between"><span className="text-muted-foreground">Other Residency</span><span className="font-medium">{formData.otherResidencyCountry}</span></div>
                 )}
-                
               </div>
 
               <div className="flex gap-3">
@@ -410,7 +546,7 @@ const EligibilityCheck = () => {
                     {result.score}<span className="text-2xl text-muted-foreground">/100</span>
                   </div>
                   <p className="text-lg font-medium text-foreground">
-                    {result.score >= 70 ? "High Chance ✅" : result.score >= 40 ? "Medium Chance ⚠️" : "Low Chance ❌"}
+                    {getScoreLabel(result.score)}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
                     {countries.find((c) => c.id === selectedCountry)?.flag_emoji} {countries.find((c) => c.id === selectedCountry)?.name} — {visaTypes.find((v) => v.id === selectedVisaType)?.name}
@@ -418,6 +554,23 @@ const EligibilityCheck = () => {
                 </CardContent>
               </Card>
             )}
+
+            {/* Disclaimer */}
+            <Card className="border-amber-500/30 bg-amber-50/50 dark:bg-amber-950/20">
+              <CardContent className="pt-4 pb-4">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="h-5 w-5 text-amber-500 shrink-0 mt-0.5" />
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p className="font-medium text-foreground">Important Disclaimer</p>
+                    <ul className="list-disc pl-4 space-y-0.5">
+                      <li>This assessment is based on expert analysis and AI evaluation.</li>
+                      <li>These are <strong>estimations only</strong>, not guaranteed outcomes.</li>
+                      <li>The final decision rests with the consulate/embassy. Visa approval or rejection depends on individual profile assessment and varies case to case.</li>
+                    </ul>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             {/* Full analysis */}
             <Card>
