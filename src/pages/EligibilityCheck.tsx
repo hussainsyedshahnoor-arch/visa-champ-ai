@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { Globe, ArrowLeft, CheckCircle, AlertCircle, Loader2, FileText, Phone, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -38,6 +38,7 @@ const EligibilityCheck = () => {
   const [step, setStep] = useState(1);
   const [showSignupGate, setShowSignupGate] = useState(false);
   const [pendingSubmit, setPendingSubmit] = useState(false);
+  const autoSubmitRef = useRef(false);
   const [countries, setCountries] = useState<Country[]>([]);
   const [visaTypes, setVisaTypes] = useState<VisaType[]>([]);
   const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "");
@@ -69,7 +70,7 @@ const EligibilityCheck = () => {
     }
   }, [user, pendingSubmit]);
 
-  // On mount, check if returning from OAuth login and restore form
+  // On mount, check if returning from OAuth login and restore form + auto-submit
   useEffect(() => {
     if (user && localStorage.getItem("eligibility_return") === "true") {
       localStorage.removeItem("eligibility_return");
@@ -80,6 +81,7 @@ const EligibilityCheck = () => {
           if (parsed.formData) setFormData(parsed.formData);
           if (parsed.selectedCountry) setSelectedCountry(parsed.selectedCountry);
           if (parsed.selectedVisaType) setSelectedVisaType(parsed.selectedVisaType);
+          autoSubmitRef.current = true;
         } catch {}
         localStorage.removeItem("eligibility_form");
       }
