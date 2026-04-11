@@ -190,7 +190,14 @@ const EligibilityCheck = () => {
     }
   };
 
-  const getScoreColor = (score: number) => {
+  // Auto-submit after OAuth return once form data is restored
+  useEffect(() => {
+    if (autoSubmitRef.current && step === 3 && selectedVisaType) {
+      autoSubmitRef.current = false;
+      handleSubmit();
+    }
+  }, [step, selectedVisaType]);
+
     if (score >= 80) return "text-green-600 dark:text-green-400";
     if (score >= 40) return "text-amber-600 dark:text-amber-400";
     return "text-red-600 dark:text-red-400";
