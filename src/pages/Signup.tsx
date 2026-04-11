@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,10 +17,12 @@ const Signup = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   useEffect(() => {
-    if (user) navigate("/dashboard", { replace: true });
-  }, [user, navigate]);
+    if (user) navigate(redirectTo, { replace: true });
+  }, [user, navigate, redirectTo]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,13 +37,13 @@ const Signup = () => {
       toast({ title: "Signup failed", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Welcome to Visa Champ!", description: "Your account is ready." });
-      navigate("/dashboard", { replace: true });
+      navigate(redirectTo, { replace: true });
     }
   };
 
   const handleGoogleSignup = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/dashboard`,
+      redirect_uri: `${window.location.origin}${redirectTo}`,
       extraParams: { prompt: "select_account" },
     });
     if (result.error) {
@@ -49,7 +51,7 @@ const Signup = () => {
       return;
     }
     if (result.redirected) return;
-    navigate("/dashboard", { replace: true });
+    navigate(redirectTo, { replace: true });
   };
 
   return (
