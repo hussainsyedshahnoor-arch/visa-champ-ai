@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -59,11 +59,13 @@ const Login = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
 
-  // If already signed in, go to dashboard
+  // If already signed in, redirect
   useEffect(() => {
-    if (user) navigate("/dashboard", { replace: true });
-  }, [user, navigate]);
+    if (user) navigate(redirectTo, { replace: true });
+  }, [user, navigate, redirectTo]);
 
   // Auto-detect existing Google session (silent sign-in like Canva)
   useEffect(() => {
@@ -94,13 +96,13 @@ const Login = () => {
     if (error) {
       toast({ title: "Login failed", description: error.message, variant: "destructive" });
     } else {
-      navigate("/");
+      navigate(redirectTo, { replace: true });
     }
   };
 
   const handleGoogleLogin = async () => {
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/dashboard`,
+      redirect_uri: `${window.location.origin}${redirectTo}`,
       extraParams: { prompt: "select_account" },
     });
     if (result.error) {
@@ -108,7 +110,7 @@ const Login = () => {
       return;
     }
     if (result.redirected) return;
-    navigate("/dashboard", { replace: true });
+    navigate(redirectTo, { replace: true });
   };
 
   return (

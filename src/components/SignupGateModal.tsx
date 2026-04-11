@@ -52,7 +52,7 @@ const SignupGateModal = ({ open, onDismiss, remainingMessages = 0, required = fa
             </div>
 
             {/* CTA */}
-            <Link to="/signup" className="w-full">
+            <Link to="/signup?redirect=/eligibility" className="w-full">
               <Button className="w-full" size="lg">
                 Sign up free
               </Button>
@@ -60,7 +60,7 @@ const SignupGateModal = ({ open, onDismiss, remainingMessages = 0, required = fa
 
             <div className="mt-3 flex items-center gap-1 text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login" className="font-medium text-primary hover:underline">
+              <Link to="/login?redirect=/eligibility" className="font-medium text-primary hover:underline">
                 Log in
               </Link>
             </div>
