@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Globe, MessageSquare, Shield, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -9,9 +9,13 @@ interface Props {
   required?: boolean;
   title?: string;
   description?: string;
+  redirectPath?: string;
 }
 
-const SignupGateModal = ({ open, onDismiss, remainingMessages = 0, required = false, title, description }: Props) => {
+const SignupGateModal = ({ open, onDismiss, remainingMessages = 0, required = false, title, description, redirectPath }: Props) => {
+  const location = useLocation();
+  const redirect = redirectPath || location.pathname;
+
   if (!open) return null;
 
   return (
@@ -52,7 +56,7 @@ const SignupGateModal = ({ open, onDismiss, remainingMessages = 0, required = fa
             </div>
 
             {/* CTA */}
-            <Link to="/signup?redirect=/eligibility" className="w-full">
+            <Link to={`/signup?redirect=${encodeURIComponent(redirect)}`} className="w-full">
               <Button className="w-full" size="lg">
                 Sign up free
               </Button>
@@ -60,7 +64,7 @@ const SignupGateModal = ({ open, onDismiss, remainingMessages = 0, required = fa
 
             <div className="mt-3 flex items-center gap-1 text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link to="/login?redirect=/eligibility" className="font-medium text-primary hover:underline">
+              <Link to={`/login?redirect=${encodeURIComponent(redirect)}`} className="font-medium text-primary hover:underline">
                 Log in
               </Link>
             </div>
