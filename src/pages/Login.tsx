@@ -152,7 +152,7 @@ const Login = () => {
         <CardFooter className="justify-center">
           <p className="text-sm text-muted-foreground">
             Don't have an account?{" "}
-            <Link to="/signup" className="font-medium text-primary hover:underline">Sign up</Link>
+            <Link to={`/signup?redirect=${encodeURIComponent(redirectTo)}`} className="font-medium text-primary hover:underline">Sign up</Link>
           </p>
         </CardFooter>
       </Card>
