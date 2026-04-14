@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { getSafeRedirect } from "@/lib/auth-return";
 
 const ForgotPasswordLink = () => {
   const [showForm, setShowForm] = useState(false);
@@ -40,7 +41,7 @@ const ForgotPasswordLink = () => {
   }
 
   return (
-    <div className="space-y-2 rounded-md border p-3 bg-muted/30">
+    <div className="space-y-2 rounded-md border bg-muted/30 p-3">
       <p className="text-xs text-muted-foreground">Enter your email to receive a reset link</p>
       <Input type="email" placeholder="you@example.com" value={resetEmail} onChange={(e) => setResetEmail(e.target.value)} />
       <div className="flex gap-2">
@@ -60,14 +61,12 @@ const Login = () => {
   const { user, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const redirectTo = getSafeRedirect(searchParams.get("redirect"), "/dashboard");
 
-  // If already signed in, redirect
   useEffect(() => {
     if (user) navigate(redirectTo, { replace: true });
   }, [user, navigate, redirectTo]);
 
-  // Auto-detect existing Google session (silent sign-in like Canva)
   useEffect(() => {
     if (authLoading || user || autoLoginAttempted) return;
     setAutoLoginAttempted(true);
@@ -75,18 +74,18 @@ const Login = () => {
     const trySilentGoogleLogin = async () => {
       try {
         const result = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: `${window.location.origin}/dashboard`,
+          redirect_uri: `${window.location.origin}${redirectTo}`,
           extraParams: { prompt: "none" },
         });
         if (result.redirected) return;
-        if (!result.error) navigate("/dashboard", { replace: true });
+        if (!result.error) navigate(redirectTo, { replace: true });
       } catch {
         // Silent login not possible — show normal login form
       }
     };
 
     trySilentGoogleLogin();
-  }, [authLoading, user, autoLoginAttempted, navigate]);
+  }, [authLoading, user, autoLoginAttempted, navigate, redirectTo]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

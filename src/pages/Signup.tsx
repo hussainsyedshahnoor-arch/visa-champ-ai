@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
+import { getSafeRedirect } from "@/lib/auth-return";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -18,7 +19,7 @@ const Signup = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchParams] = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const redirectTo = getSafeRedirect(searchParams.get("redirect"), "/dashboard");
 
   useEffect(() => {
     if (user) navigate(redirectTo, { replace: true });

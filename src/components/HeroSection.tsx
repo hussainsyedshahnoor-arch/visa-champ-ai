@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { Send, Mic, MicOff, FileText, Phone, MessageSquarePlus, History, ArrowDown, Paperclip, X, Image as ImageIcon } from "lucide-react";
 import { Globe } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import TypingIndicator from "@/components/TypingIndicator";
 import { streamChat, type Msg } from "@/lib/chat-stream";
+import { buildReturnPath, clearAuthReturnContext, getAuthReturnContext, saveAuthReturnContext } from "@/lib/auth-return";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { useChatHistory } from "@/hooks/use-chat-history";
@@ -70,6 +72,7 @@ function useAutoType(prompts: string[], speed = 60, pause = 1800) {
 }
 
 const HeroSection = () => {
+  const location = useLocation();
   const [query, setQuery] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -88,6 +91,7 @@ const HeroSection = () => {
   const { user } = useAuth();
   const { guestId, isAtCap, showGate, incrementCount, dismissGate, migrateToUser } = useGuestSession();
   const autoType = useAutoType(AUTO_TYPE_PROMPTS);
+  const currentReturnPath = buildReturnPath(location.pathname, location.search, location.hash);
 
   const {
     sessions, activeSessionId, fetchSessions, createSession,
@@ -95,10 +99,36 @@ const HeroSection = () => {
   } = useChatHistory(user?.id, guestId);
 
   useEffect(() => {
-    if (user && guestId) {
-      migrateToUser(user.id).then(() => fetchSessions());
-    }
-  }, [user?.id]);
+    if (!user) return;
+
+    const hydrateAfterAuth = async () => {
+      const returnContext = getAuthReturnContext();
+      const shouldRestoreChat =
+        returnContext?.source === "hero-chat" && returnContext.redirectTo === currentReturnPath;
+
+      if (guestId) {
+        await migrateToUser(user.id);
+      }
+
+      await fetchSessions();
+
+      if (!shouldRestoreChat) return;
+
+      if (returnContext.chatSessionId) {
+        const msgs = await loadSession(returnContext.chatSessionId);
+        setMessages(msgs);
+        sessionIdRef.current = returnContext.chatSessionId;
+        setHasResponse(msgs.length > 0 && msgs[msgs.length - 1]?.role === "assistant");
+        setTimeout(() => {
+          scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+        }, 100);
+      }
+
+      clearAuthReturnContext();
+    };
+
+    hydrateAfterAuth();
+  }, [user, guestId, migrateToUser, fetchSessions, loadSession, currentReturnPath]);
 
   const chatActive = messages.length > 0;
 
@@ -152,12 +182,132 @@ const HeroSection = () => {
     // Allow 2 free messages for guests, then require login
     if (!user) {
       if (guestMsgCount >= 2) {
+        saveAuthReturnContext({
+          source: "hero-chat",
+          redirectTo: currentReturnPath,
+          chatSessionId: sessionIdRef.current,
+        });
         setShowSignupGate(true);
         return;
       }
       setGuestMsgCount((c) => c + 1);
     }
 
+    // Upload attachments first
+    let attachmentUrls: string[] = [];
+    if (attachments.length > 0) {
+      setUploading(true);
+      attachmentUrls = await uploadAttachments();
+      setAttachments([]);
+      setUploading(false);
+    }
+
+    // Build message content with attachments
+    let content = trimmed;
+    if (attachmentUrls.length > 0) {
+      const attachmentText = attachmentUrls.map((url) => `[Attachment](${url})`).join("\n");
+      content = content ? `${content}\n\n${attachmentText}` : attachmentText;
+    }
+
+    const userMsg: Msg = { role: "user", content };
+    setMessages((prev) => [...prev, userMsg]);
+    setQuery("");
+    setIsLoading(true);
+    setHasResponse(false);
+    scrollToBottom();
+
+    if (!sessionIdRef.current) {
+      const newId = await createSession(trimmed);
+      sessionIdRef.current = newId;
+    }
+    if (sessionIdRef.current) await saveMessage(sessionIdRef.current, userMsg);
+    if (!user) await incrementCount();
+
+    let assistantContent = "";
+    const allMessages = [...messages, userMsg];
+
+    try {
+      await streamChat({
+        messages: allMessages,
+        onDelta: (chunk) => {
+          assistantContent += chunk;
+          setMessages((prev) => {
+            const last = prev[prev.length - 1];
+            if (last?.role === "assistant") {
+              return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantContent } : m));
+            }
+            return [...prev, { role: "assistant", content: assistantContent }];
+          });
+          scrollToBottom();
+        },
+        onDone: () => {
+          setIsLoading(false);
+          setHasResponse(true);
+          if (sessionIdRef.current && assistantContent) {
+            saveMessage(sessionIdRef.current, { role: "assistant", content: assistantContent });
+          }
+        },
+        onError: (err) => {
+          toast({ title: "Error", description: err.message, variant: "destructive" });
+          setIsLoading(false);
+        },
+      });
+    } catch {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleVoice = useCallback(() => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { toast({ title: "Not supported", description: "Speech recognition is not supported.", variant: "destructive" }); return; }
+    if (isListening && recognitionRef.current) { recognitionRef.current.stop(); setIsListening(false); return; }
+    const recognition = new SR();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = "";
+    recognition.onresult = (e: any) => {
+      const t = Array.from(e.results).map((r: any) => r[0].transcript).join("");
+      setQuery(t);
+      if (e.results[0].isFinal) { setIsListening(false); sendMessage(t); }
+    };
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognitionRef.current = recognition;
+    recognition.start();
+    setIsListening(true);
+  }, [isListening, toast]);
+
+  const startNewChat = useCallback(() => {
+    setMessages([]); setQuery(""); setIsLoading(false); setHasResponse(false);
+    sessionIdRef.current = null; clearActive();
+    if (recognitionRef.current) { recognitionRef.current.stop(); setIsListening(false); }
+  }, [clearActive]);
+
+  const handleSelectSession = useCallback(async (sessionId: string) => {
+    const msgs = await loadSession(sessionId);
+    setMessages(msgs);
+    sessionIdRef.current = sessionId;
+    setHasResponse(msgs.length > 0 && msgs[msgs.length - 1]?.role === "assistant");
+    setTimeout(() => scrollToBottom(), 100);
+  }, [loadSession]);
+
+  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); sendMessage(query); };
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(query); }
+  };
+
+  return (
+    <>
+      <ChatHistorySidebar
+        open={sidebarOpen} onClose={() => setSidebarOpen(false)}
+        sessions={sessions} activeSessionId={activeSessionId}
+        onSelectSession={handleSelectSession} onDeleteSession={deleteSession}
+        onFetch={fetchSessions} isLoggedIn={!!user}
+      />
+      <SignupGateModal
+        open={showSignupGate || showGate}
+        onDismiss={() => { setShowSignupGate(false); dismissGate(); clearAuthReturnContext(); }}
+      />
     // Upload attachments first
     let attachmentUrls: string[] = [];
     if (attachments.length > 0) {
