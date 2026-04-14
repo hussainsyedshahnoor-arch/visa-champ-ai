@@ -92,7 +92,7 @@ const Signup = () => {
         <CardFooter className="justify-center">
           <p className="text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="font-medium text-primary hover:underline">Log in</Link>
+            <Link to={`/login?redirect=${encodeURIComponent(redirectTo)}`} className="font-medium text-primary hover:underline">Log in</Link>
           </p>
         </CardFooter>
       </Card>
