@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import { Globe, ArrowLeft, CheckCircle, AlertCircle, Loader2, FileText, Phone, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +13,7 @@ import ReactMarkdown from "react-markdown";
 import ThemeToggle from "@/components/ThemeToggle";
 import SignupGateModal from "@/components/SignupGateModal";
 import { useAuth } from "@/hooks/use-auth";
+import { buildReturnPath, clearAuthReturnContext, saveAuthReturnContext } from "@/lib/auth-return";
 
 interface Country {
   id: string;
@@ -33,6 +34,7 @@ interface VisaType {
 
 const EligibilityCheck = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const [step, setStep] = useState(1);
@@ -46,12 +48,16 @@ const EligibilityCheck = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<{ analysis: string; score: number | null } | null>(null);
   const { toast } = useToast();
+  const currentReturnPath = buildReturnPath(location.pathname, location.search, location.hash);
 
   const handleNextToReview = () => {
     if (!user) {
       setPendingSubmit(true);
       setShowSignupGate(true);
-      // Persist state for OAuth redirect
+      saveAuthReturnContext({
+        source: "eligibility",
+        redirectTo: currentReturnPath,
+      });
       localStorage.setItem("eligibility_return", "true");
       localStorage.setItem("eligibility_form", JSON.stringify({ formData, selectedCountry, selectedVisaType }));
       return;
@@ -59,18 +65,17 @@ const EligibilityCheck = () => {
     setStep(3);
   };
 
-  // When user logs in after being gated (same-page login), continue to review
   useEffect(() => {
     if (user && pendingSubmit) {
       setPendingSubmit(false);
       setShowSignupGate(false);
+      clearAuthReturnContext();
       localStorage.removeItem("eligibility_return");
       localStorage.removeItem("eligibility_form");
       setStep(3);
     }
   }, [user, pendingSubmit]);
 
-  // On mount, check if returning from OAuth login and restore form + auto-submit
   useEffect(() => {
     if (user && localStorage.getItem("eligibility_return") === "true") {
       localStorage.removeItem("eligibility_return");
@@ -85,6 +90,7 @@ const EligibilityCheck = () => {
         } catch {}
         localStorage.removeItem("eligibility_form");
       }
+      clearAuthReturnContext();
       setStep(3);
     }
   }, [user]);
