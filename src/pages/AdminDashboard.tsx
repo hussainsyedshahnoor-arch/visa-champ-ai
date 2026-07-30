@@ -318,6 +318,11 @@ const AdminDashboard = () => {
             <UsersTab />
           </TabsContent>
 
+          <TabsContent value="leads">
+            <EligibilityLeadsTab />
+          </TabsContent>
+
+
           {/* Countries Tab */}
           <TabsContent value="countries">
             <div className="flex items-center justify-between mb-4">
