@@ -144,7 +144,15 @@ const FieldRenderer = ({ field, data, onChange, hideLabel }: FieldRendererProps)
           );
         })}
       </div>
+      {selectedValues.includes("Other") && (
+        <Input
+          value={(data[otherKey] as string) || ""}
+          placeholder="Please specify"
+          onChange={(e) => onChange(otherKey, e.target.value)}
+        />
+      )}
     </div>
+
   );
 };
 
