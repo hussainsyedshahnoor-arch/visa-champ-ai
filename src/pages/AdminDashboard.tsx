@@ -284,6 +284,8 @@ const AdminDashboard = () => {
             <TabsTrigger value="flagged" className="gap-1.5"><AlertTriangle className="h-4 w-4" /> Flagged AI</TabsTrigger>
             <TabsTrigger value="audit" className="gap-1.5"><History className="h-4 w-4" /> Audit Log</TabsTrigger>
             <TabsTrigger value="users" className="gap-1.5"><Users className="h-4 w-4" /> Users</TabsTrigger>
+            <TabsTrigger value="leads" className="gap-1.5"><UserPlus className="h-4 w-4" /> Leads</TabsTrigger>
+
             <TabsTrigger value="countries">Countries</TabsTrigger>
             <TabsTrigger value="visa-details" disabled={!selectedCountry}>Visa Types & Details</TabsTrigger>
           </TabsList>
