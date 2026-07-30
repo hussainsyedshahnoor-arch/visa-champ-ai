@@ -164,16 +164,25 @@ const HeroSection = () => {
 
   const uploadAttachments = async (): Promise<string[]> => {
     const urls: string[] = [];
+    if (!user) {
+      toast({ title: "Sign in required", description: "Please sign in to attach files.", variant: "destructive" });
+      return urls;
+    }
     for (const att of attachments) {
       const ext = att.file.name.split(".").pop() || "bin";
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      // Files live in a private, per-user folder; links are short-lived signed URLs.
+      const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage.from("chat-attachments").upload(path, att.file);
       if (error) { toast({ title: "Upload failed", description: error.message, variant: "destructive" }); continue; }
-      const { data: urlData } = supabase.storage.from("chat-attachments").getPublicUrl(path);
-      urls.push(urlData.publicUrl);
+      const { data: signed, error: signErr } = await supabase.storage
+        .from("chat-attachments")
+        .createSignedUrl(path, 60 * 60 * 24 * 7);
+      if (signErr || !signed) { toast({ title: "Upload failed", description: "Could not prepare the file link.", variant: "destructive" }); continue; }
+      urls.push(signed.signedUrl);
     }
     return urls;
   };
+
 
   const sendMessage = async (text: string) => {
     const trimmed = text.trim();
