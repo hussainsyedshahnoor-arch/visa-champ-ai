@@ -20,6 +20,8 @@ import AuditLogTab from "@/components/admin/AuditLogTab";
 import FlaggedResponsesTab from "@/components/admin/FlaggedResponsesTab";
 import ApplicationNotesTab from "@/components/admin/ApplicationNotesTab";
 import UsersTab from "@/components/admin/UsersTab";
+import EligibilityLeadsTab from "@/components/admin/EligibilityLeadsTab";
+
 
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
