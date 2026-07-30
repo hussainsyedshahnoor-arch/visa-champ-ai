@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { Link, useSearchParams, useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Loader2, FileText, Phone, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -10,9 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import ThemeToggle from "@/components/ThemeToggle";
-import SignupGateModal from "@/components/SignupGateModal";
-import { useAuth } from "@/hooks/use-auth";
-import { buildReturnPath, clearAuthReturnContext, saveAuthReturnContext } from "@/lib/auth-return";
+import DocumentUploadCard from "@/components/eligibility/DocumentUploadCard";
 import StepShell from "@/components/eligibility/StepShell";
 import FieldRenderer from "@/components/eligibility/FieldRenderer";
 import {
@@ -46,13 +44,8 @@ const RESULTS_STEP = TOTAL_STEPS + 2; // 12
 
 const EligibilityCheck = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
-  const { user } = useAuth();
   const [step, setStep] = useState(1);
-  const [showSignupGate, setShowSignupGate] = useState(false);
-  const [pendingSubmit, setPendingSubmit] = useState(false);
-  const autoSubmitRef = useRef(false);
   const [countries, setCountries] = useState<Country[]>([]);
   const [visaTypes, setVisaTypes] = useState<VisaType[]>([]);
   const [selectedCountry, setSelectedCountry] = useState(searchParams.get("country") || "");
@@ -61,50 +54,6 @@ const EligibilityCheck = () => {
   const [result, setResult] = useState<{ analysis: string; score: number | null } | null>(null);
   const [formData, setFormData] = useState<EligibilityFormData>(INITIAL_FORM_DATA);
   const { toast } = useToast();
-  const currentReturnPath = buildReturnPath(location.pathname, location.search, location.hash);
-
-  const handleNextToReview = () => {
-    if (!user) {
-      setPendingSubmit(true);
-      setShowSignupGate(true);
-      saveAuthReturnContext({ source: "eligibility", redirectTo: currentReturnPath });
-      localStorage.setItem("eligibility_return", "true");
-      localStorage.setItem("eligibility_form", JSON.stringify({ formData, selectedCountry, selectedVisaType }));
-      return;
-    }
-    setStep(REVIEW_STEP);
-  };
-
-  useEffect(() => {
-    if (user && pendingSubmit) {
-      setPendingSubmit(false);
-      setShowSignupGate(false);
-      clearAuthReturnContext();
-      localStorage.removeItem("eligibility_return");
-      localStorage.removeItem("eligibility_form");
-      setStep(REVIEW_STEP);
-    }
-  }, [user, pendingSubmit]);
-
-  useEffect(() => {
-    if (user && localStorage.getItem("eligibility_return") === "true") {
-      localStorage.removeItem("eligibility_return");
-      const saved = localStorage.getItem("eligibility_form");
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed.formData) setFormData(parsed.formData);
-          if (parsed.selectedCountry) setSelectedCountry(parsed.selectedCountry);
-          if (parsed.selectedVisaType) setSelectedVisaType(parsed.selectedVisaType);
-          autoSubmitRef.current = true;
-        } catch {}
-        localStorage.removeItem("eligibility_form");
-      }
-      clearAuthReturnContext();
-      setStep(REVIEW_STEP);
-    }
-  }, [user]);
-
   useEffect(() => {
     supabase.from("countries").select("id, name, flag_emoji, code").order("name").then(({ data }) => {
       if (data) setCountries(data as Country[]);
@@ -178,14 +127,6 @@ const EligibilityCheck = () => {
       setIsAnalyzing(false);
     }
   };
-
-  // Auto-submit after OAuth return once form data is restored
-  useEffect(() => {
-    if (autoSubmitRef.current && step === REVIEW_STEP && selectedVisaType) {
-      autoSubmitRef.current = false;
-      handleSubmit();
-    }
-  }, [step, selectedVisaType]);
 
   const getScoreColor = (score: number) => {
     if (score >= 80) return "text-green-600 dark:text-green-400";
@@ -308,7 +249,7 @@ const EligibilityCheck = () => {
             helper={currentStep.helper}
             callout={currentStep.callout}
             onBack={() => setStep(step - 1)}
-            onNext={() => (step === TOTAL_STEPS ? handleNextToReview() : setStep(step + 1))}
+            onNext={() => (step === TOTAL_STEPS ? setStep(REVIEW_STEP) : setStep(step + 1))}
             nextDisabled={!currentComplete}
             nextLabel={step === TOTAL_STEPS ? "Review →" : "Next →"}
           >
@@ -394,6 +335,15 @@ const EligibilityCheck = () => {
               </CardContent>
             </Card>
 
+            <DocumentUploadCard
+              fullName={formData.fullName as string}
+              email={formData.email as string}
+              whatsapp={formData.whatsappNumber as string}
+              countryName={country?.name}
+              visaTypeName={visaType?.name}
+              score={result.score}
+            />
+
             <div className="flex flex-wrap gap-3">
               <Button className="flex-1 gap-2" onClick={() => { setStep(1); setResult(null); }}>
                 Check Another Country
@@ -409,13 +359,6 @@ const EligibilityCheck = () => {
         )}
       </div>
 
-      <SignupGateModal
-        open={showSignupGate}
-        onDismiss={() => setShowSignupGate(false)}
-        required
-        title="Login to see your score 🔐"
-        description="Sign in or create a free account to get your personalized visa eligibility score."
-      />
     </div>
   );
 };
