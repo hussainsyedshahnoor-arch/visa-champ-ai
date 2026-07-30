@@ -13,6 +13,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import DocumentUploadCard from "@/components/eligibility/DocumentUploadCard";
 import StepShell from "@/components/eligibility/StepShell";
 import FieldRenderer from "@/components/eligibility/FieldRenderer";
+import { useLeadCapture, saveLead, resetLeadToken } from "@/hooks/use-lead-capture";
+
 import {
   ELIGIBILITY_STEPS,
   INITIAL_FORM_DATA,
@@ -121,6 +123,15 @@ const EligibilityCheck = () => {
       const data = await resp.json();
       setResult(data);
       setStep(RESULTS_STEP);
+      saveLead({
+        formData: formData as Record<string, unknown>,
+        countryName: countryObj?.name,
+        visaTypeName: visaObj?.name,
+        currentStep: RESULTS_STEP,
+        status: "submitted",
+        score: data.score ?? null,
+      });
+
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     } finally {
@@ -146,6 +157,20 @@ const EligibilityCheck = () => {
 
   const country = countries.find((c) => c.id === selectedCountry);
   const visaType = visaTypes.find((v) => v.id === selectedVisaType);
+
+  // Capture partially completed forms so the team can follow up on abandons
+  useLeadCapture(
+    {
+      formData: formData as Record<string, unknown>,
+      countryName: country?.name,
+      visaTypeName: visaType?.name,
+      currentStep: step,
+      status: step === RESULTS_STEP ? "submitted" : "in_progress",
+      score: result?.score ?? null,
+    },
+    step > 1 && Boolean(selectedCountry),
+  );
+
 
   const reviewRows: { label: string; value: string }[] = [
     { label: "Destination", value: `${country?.flag_emoji ?? ""} ${country?.name ?? ""}`.trim() },
@@ -345,7 +370,7 @@ const EligibilityCheck = () => {
             />
 
             <div className="flex flex-wrap gap-3">
-              <Button className="flex-1 gap-2" onClick={() => { setStep(1); setResult(null); }}>
+              <Button className="flex-1 gap-2" onClick={() => { resetLeadToken(); setStep(1); setResult(null); }}>
                 Check Another Country
               </Button>
               <Button variant="outline" className="gap-2" onClick={() => navigate("/apply")}>

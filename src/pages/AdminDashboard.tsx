@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Globe, ArrowLeft, Plus, Trash2, Edit2, Save, X, Shield, ClipboardList, MessageSquare, Calendar, FileText, History, AlertTriangle, StickyNote, Users } from "lucide-react";
+import { Globe, ArrowLeft, Plus, Trash2, Edit2, Save, X, Shield, ClipboardList, MessageSquare, Calendar, FileText, History, AlertTriangle, StickyNote, Users, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,8 @@ import AuditLogTab from "@/components/admin/AuditLogTab";
 import FlaggedResponsesTab from "@/components/admin/FlaggedResponsesTab";
 import ApplicationNotesTab from "@/components/admin/ApplicationNotesTab";
 import UsersTab from "@/components/admin/UsersTab";
+import EligibilityLeadsTab from "@/components/admin/EligibilityLeadsTab";
+
 
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -282,6 +284,8 @@ const AdminDashboard = () => {
             <TabsTrigger value="flagged" className="gap-1.5"><AlertTriangle className="h-4 w-4" /> Flagged AI</TabsTrigger>
             <TabsTrigger value="audit" className="gap-1.5"><History className="h-4 w-4" /> Audit Log</TabsTrigger>
             <TabsTrigger value="users" className="gap-1.5"><Users className="h-4 w-4" /> Users</TabsTrigger>
+            <TabsTrigger value="leads" className="gap-1.5"><UserPlus className="h-4 w-4" /> Leads</TabsTrigger>
+
             <TabsTrigger value="countries">Countries</TabsTrigger>
             <TabsTrigger value="visa-details" disabled={!selectedCountry}>Visa Types & Details</TabsTrigger>
           </TabsList>
@@ -317,6 +321,11 @@ const AdminDashboard = () => {
           <TabsContent value="users">
             <UsersTab />
           </TabsContent>
+
+          <TabsContent value="leads">
+            <EligibilityLeadsTab />
+          </TabsContent>
+
 
           {/* Countries Tab */}
           <TabsContent value="countries">
