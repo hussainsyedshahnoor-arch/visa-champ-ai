@@ -954,10 +954,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      migrate_guest_to_user: {
-        Args: { _guest_id: string; _user_id: string }
-        Returns: undefined
-      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
