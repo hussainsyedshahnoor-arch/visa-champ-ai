@@ -13,6 +13,8 @@ import ThemeToggle from "@/components/ThemeToggle";
 import DocumentUploadCard from "@/components/eligibility/DocumentUploadCard";
 import StepShell from "@/components/eligibility/StepShell";
 import FieldRenderer from "@/components/eligibility/FieldRenderer";
+import { useLeadCapture, saveLead, resetLeadToken } from "@/hooks/use-lead-capture";
+
 import {
   ELIGIBILITY_STEPS,
   INITIAL_FORM_DATA,
