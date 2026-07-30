@@ -491,6 +491,54 @@ export type Database = {
           },
         ]
       }
+      eligibility_document_submissions: {
+        Row: {
+          country_name: string | null
+          created_at: string
+          document_name: string
+          email: string | null
+          file_path: string
+          file_size: number | null
+          full_name: string | null
+          id: string
+          mime_type: string | null
+          score: number | null
+          user_id: string | null
+          visa_type_name: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          country_name?: string | null
+          created_at?: string
+          document_name: string
+          email?: string | null
+          file_path: string
+          file_size?: number | null
+          full_name?: string | null
+          id?: string
+          mime_type?: string | null
+          score?: number | null
+          user_id?: string | null
+          visa_type_name?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          country_name?: string | null
+          created_at?: string
+          document_name?: string
+          email?: string | null
+          file_path?: string
+          file_size?: number | null
+          full_name?: string | null
+          id?: string
+          mime_type?: string | null
+          score?: number | null
+          user_id?: string | null
+          visa_type_name?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       flagged_responses: {
         Row: {
           created_at: string
