@@ -158,6 +158,20 @@ const EligibilityCheck = () => {
   const country = countries.find((c) => c.id === selectedCountry);
   const visaType = visaTypes.find((v) => v.id === selectedVisaType);
 
+  // Capture partially completed forms so the team can follow up on abandons
+  useLeadCapture(
+    {
+      formData: formData as Record<string, unknown>,
+      countryName: country?.name,
+      visaTypeName: visaType?.name,
+      currentStep: step,
+      status: step === RESULTS_STEP ? "submitted" : "in_progress",
+      score: result?.score ?? null,
+    },
+    step > 1 && Boolean(selectedCountry),
+  );
+
+
   const reviewRows: { label: string; value: string }[] = [
     { label: "Destination", value: `${country?.flag_emoji ?? ""} ${country?.name ?? ""}`.trim() },
     { label: "Visa Type", value: visaType?.name ?? "" },
