@@ -145,7 +145,23 @@ D) Clear Source of Income:
 
 E) Tax Filing:
 - Active tax filer with FBR = Positive (+5)
-- NOT a tax filer = Negative (-5 to -8). For employed/business profiles this is a significant concern.
+
+**4. IMMIGRATION RECORD (Can override everything else)**
+- Refused a visa once = Negative (-8 to -12)
+- Refused multiple times = MAJOR negative (-20 to -25)
+- Overstayed a visa = SEVERE negative (-25 to -35)
+- Deported or banned = DISQUALIFYING (cap the score at 15)
+- No valid passport yet = cap the score at 45 and list passport as the first action item
+
+**5. TRIP PLANNING & SPONSORSHIP**
+- Confirmed itinerary + confirmed accommodation = Positive (+5 each)
+- No itinerary / no accommodation but arrangeable = Neutral to minor negative (-3)
+- Self-sponsored with matching finances = Positive (+5)
+- Sponsored by a friend/relative abroad = CAUTION (-5); consulates read this as possible immigration intent
+- Trip budget clearly below the cost of the planned stay length = Negative (-10)
+- Bank balance under PKR 1,000,000 for a western destination = MAJOR negative (-15 to -20)
+- Cannot provide 6-month bank statements = MAJOR negative (-15)
+
 
 **SCORE BANDS (STRICT):**
 - 80-95: HIGH CHANCE — ONLY for genuinely strong profiles with MOST of: strong finances (maintained, above threshold), extensive quality travel history (selective countries), strong home ties (family staying behind, property in own name), stable documented income, tax filer
