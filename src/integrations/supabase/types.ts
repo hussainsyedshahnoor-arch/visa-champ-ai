@@ -539,6 +539,60 @@ export type Database = {
         }
         Relationships: []
       }
+      eligibility_leads: {
+        Row: {
+          country_name: string | null
+          created_at: string
+          current_step: number | null
+          email: string | null
+          form_data: Json
+          full_name: string | null
+          furthest_step: number | null
+          id: string
+          lead_token: string
+          score: number | null
+          status: string
+          updated_at: string
+          user_id: string | null
+          visa_type_name: string | null
+          whatsapp: string | null
+        }
+        Insert: {
+          country_name?: string | null
+          created_at?: string
+          current_step?: number | null
+          email?: string | null
+          form_data?: Json
+          full_name?: string | null
+          furthest_step?: number | null
+          id?: string
+          lead_token: string
+          score?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          visa_type_name?: string | null
+          whatsapp?: string | null
+        }
+        Update: {
+          country_name?: string | null
+          created_at?: string
+          current_step?: number | null
+          email?: string | null
+          form_data?: Json
+          full_name?: string | null
+          furthest_step?: number | null
+          id?: string
+          lead_token?: string
+          score?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          visa_type_name?: string | null
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       flagged_responses: {
         Row: {
           created_at: string
