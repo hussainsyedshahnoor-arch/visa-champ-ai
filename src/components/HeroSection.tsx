@@ -444,11 +444,14 @@ const HeroSection = () => {
               />
               <button
                 type="button"
+                disabled={!user}
+                title={user ? "Attach files" : "Sign in to attach files"}
                 onClick={() => fileInputRef.current?.click()}
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
               >
                 <Paperclip className="h-5 w-5" />
               </button>
+
               <div className="flex-1 relative">
                 <textarea
                   value={query}
