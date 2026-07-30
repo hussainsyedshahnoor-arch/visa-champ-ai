@@ -123,6 +123,15 @@ const EligibilityCheck = () => {
       const data = await resp.json();
       setResult(data);
       setStep(RESULTS_STEP);
+      saveLead({
+        formData: formData as Record<string, unknown>,
+        countryName: countryObj?.name,
+        visaTypeName: visaObj?.name,
+        currentStep: RESULTS_STEP,
+        status: "submitted",
+        score: data.score ?? null,
+      });
+
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });
     } finally {
