@@ -338,7 +338,7 @@ const EligibilityCheck = () => {
             <DocumentUploadCard
               fullName={formData.fullName as string}
               email={formData.email as string}
-              whatsapp={formData.whatsapp as string}
+              whatsapp={formData.whatsappNumber as string}
               countryName={country?.name}
               visaTypeName={visaType?.name}
               score={result.score}
