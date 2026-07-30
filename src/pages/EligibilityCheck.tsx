@@ -370,7 +370,7 @@ const EligibilityCheck = () => {
             />
 
             <div className="flex flex-wrap gap-3">
-              <Button className="flex-1 gap-2" onClick={() => { setStep(1); setResult(null); }}>
+              <Button className="flex-1 gap-2" onClick={() => { resetLeadToken(); setStep(1); setResult(null); }}>
                 Check Another Country
               </Button>
               <Button variant="outline" className="gap-2" onClick={() => navigate("/apply")}>
