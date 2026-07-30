@@ -1,64 +1,49 @@
 
+# Eligibility Check Wizard + Remove Homepage Globe
 
-# Visa Champ — Landing Page + AI Chatbot
+Two scoped changes only. Nothing else in the app changes.
 
-## Overview
-Build the public-facing landing page with an integrated AI chatbot ("Visa Champ") as the hero experience. Modern & friendly design with approachable colors, rounded corners, and clean typography — similar to Wise or Deel.
+## 1. Remove the globe from the homepage
 
-## Design System
-- **Primary**: Vibrant blue (#2563EB) with warm accent (#F59E0B amber/gold)
-- **Background**: Soft warm white (#FAFAF9) with subtle gradients
-- **Typography**: Inter for body, bold headings with friendly tone
-- **Cards**: Rounded-lg corners, soft shadows, white backgrounds
-- **Chat UI**: WhatsApp-like bubble style with Visa Champ branding
+Drop `GlobeSection` from `src/pages/Index.tsx`. The flag marquee, hero, how-it-works, features, testimonials and footer all stay exactly as they are. The `GlobeSection.tsx` file itself stays in the repo (unused) so it can be re-enabled later.
 
-## Pages & Components
+## 2. Rebuild `/eligibility` as a categorized, dropdown-driven wizard
 
-### 1. Landing Page (Homepage)
-- **Navbar**: Visa Champ logo, navigation links (How It Works, Features, Pricing), Login/Sign Up buttons
-- **Hero Section**: Bold headline ("Your AI Visa Consultant"), subtext about simplifying visa applications, and an embedded chat preview/CTA
-- **AI Chat Widget**: Prominent chatbot embedded in the hero or as a floating panel — the main interaction point
-  - Suggested prompt chips: "Tourist visa for UAE", "Student visa for UK", "Work visa requirements"
-  - Guest message cap (5 messages), then soft signup gate modal
-  - AI disclaimer footer: "This is an AI assistant. Responses are for guidance only."
-- **How It Works**: 4-step visual flow (Chat → Requirements → Eligibility → Apply)
-- **Features Section**: Cards highlighting AI consultation, eligibility checks, officer support, document vault
-- **Testimonials**: Social proof section with placeholder reviews
-- **Footer**: Links, contact info, legal disclaimers
+Only `src/pages/EligibilityCheck.tsx` (and its new step components) changes — no other calculator, form, or page is touched.
 
-### 2. Auth Pages
-- **Sign Up**: Email + password form, Google SSO button, Apple SSO button
-- **Login**: Email + password, SSO options
-- Post-auth redirect back to chat with history preserved
+### Flow
 
-### 3. AI Chatbot (Core Feature)
-- Full-screen chat view for authenticated users at `/chat`
-- Chat session list sidebar (conversation history)
-- Streaming AI responses via Lovable AI edge function
-- RAG-aware system prompt with visa consultation persona
-- Suggested prompts for cold start
-- Message bubbles with timestamps and typing indicator
-- Visa Champ bot avatar and branding
+1. **Destination** — unchanged (existing country + visa type pickers, DB-driven).
+2. **Contact details** — full name, WhatsApp number, email (typed); country of residence (dropdown, default Pakistan).
+3. **Passport** — valid passport? (Yes / No — need to apply or renew); nationality (dropdown).
+4. **Travel history** — traveled abroad before?; countries visited (multi-select); ever refused a visa? (Never / Once / Multiple); ever overstayed or deported? (No / Overstayed / Deported or banned).
+5. **Employment & status** — employment status; years in current role; regular monthly income type; monthly income range (PKR).
+6. **Assets & dependents** — property/assets in own name; number of dependents.
+7. **Purpose of visit** — primary purpose; planned length of stay.
+8. **Bank & financial capacity** — "Visa Officer Expectation" callout; trip budget range; sponsor; bank account type; bank balance range; balance maintained 3+ months; regular income deposits; 6-month statements availability.
+9. **Travel itinerary** — confirmed itinerary; accommodation bookings.
+10. **Referral** — how did you hear about us.
+11. **Review → Results** — existing AI score screen, unchanged in look and behaviour.
 
-## Backend (Lovable Cloud)
+Every option list uses exactly the wording supplied. Only name, WhatsApp number, and email are typed — everything else is a dropdown or selectable option card.
 
-### Edge Function: `chat`
-- Accepts user messages + conversation history
-- System prompt as visa consultant personality ("Visa Champ")
-- Streams responses via Lovable AI gateway
-- Returns structured guidance on visa types, documents, eligibility
+### Screen structure
 
-### Database Tables (initial)
-- `chat_sessions` — track user conversations
-- `chat_messages` — store message history
-- `guest_sessions` — track unauthenticated users with message count
+Each step is its own screen: "Step N of 10" progress bar with the category name on the right, a "Your visa profile" status strip, a step eyebrow badge (e.g. "STEP 5 — ASSETS & DEPENDENTS"), the question heading with helper text, then Back / Next. Next stays disabled until the required answers on that step are given.
 
-### Auth Setup
-- Email + password authentication
-- Google SSO
+The profile strip shows a live badge — `Not assessed` → `In progress` → `⚠️ Needs improvement` — derived client-side from answers already given.
 
-## Guest → Registered Flow
-- Guest lands on homepage, interacts with chat widget
-- After 5 messages, soft-gate modal appears: "Create a free account to continue"
-- On signup, chat history is preserved and migrated to their account
+### Login gate
 
+Unchanged behaviour: signup gate before the Review step, form state saved to localStorage, score auto-submits on return from login.
+
+### Scoring
+
+The `eligibility-check` edge function prompt is updated to read the new fields (bank balance band, balance consistency, sponsor, itinerary, accommodation, refusal/overstay history, dependents, purpose, stay length). Score bands stay as today (80+ = High Chance). Visa refusal and overstay/deportation history are added as explicit negative factors.
+
+## Technical notes
+
+- Step content is split into `src/components/eligibility/` (one component per step) plus a shared step shell and a `eligibility-questions.ts` file holding every option list, so questions are data-driven and easy to edit later.
+- Answers live in one `formData` object; existing field names are kept where they map, new keys added for new questions.
+- Selects use the existing shadcn `Select`; radio-style questions use option cards styled with design tokens (no hardcoded colors).
+- No database schema changes.

@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import GlobeSection from "@/components/GlobeSection";
+
 import FlagMarquee from "@/components/FlagMarquee";
 import HowItWorks from "@/components/HowItWorks";
 import Features from "@/components/Features";
@@ -12,7 +12,7 @@ const Index = () => (
     <Navbar />
     <main>
       <HeroSection />
-      <GlobeSection />
+      
       <FlagMarquee />
       <HowItWorks />
       <Features />
