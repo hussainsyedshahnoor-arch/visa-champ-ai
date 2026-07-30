@@ -39,40 +39,39 @@ const DocumentUploadCard = ({ fullName, email, whatsapp, countryName, visaTypeNa
     if (files.length === 0) return;
     setUploading(true);
     try {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const userId = sessionData.session?.user.id ?? null;
-      const folder = `${userId ?? "guest"}/${Date.now()}`;
-
       for (const file of files) {
-        const path = `${folder}/${file.name.replace(/[^\w.\-]/g, "_")}`;
-        const { error: upErr } = await supabase.storage.from("eligibility-docs").upload(path, file);
-        if (upErr) throw upErr;
-
-        const { error: rowErr } = await supabase.from("eligibility_document_submissions").insert({
-          user_id: userId,
-          full_name: fullName || null,
-          email: email || null,
-          whatsapp: whatsapp || null,
-          country_name: countryName || null,
-          visa_type_name: visaTypeName || null,
-          score: score ?? null,
-          document_name: file.name,
-          file_path: path,
-          file_size: file.size,
-          mime_type: file.type || null,
+        // Server issues a scoped signed upload URL and records the submission.
+        const { data, error } = await supabase.functions.invoke("submit-eligibility-doc", {
+          body: {
+            fileName: file.name,
+            fileSize: file.size,
+            mimeType: file.type || null,
+            fullName: fullName || null,
+            email: email || null,
+            whatsapp: whatsapp || null,
+            countryName: countryName || null,
+            visaTypeName: visaTypeName || null,
+            score: score ?? null,
+          },
         });
-        if (rowErr) throw rowErr;
+        if (error) throw error;
+
+        const { error: upErr } = await supabase.storage
+          .from("eligibility-docs")
+          .uploadToSignedUrl(data.path, data.token, file);
+        if (upErr) throw upErr;
       }
 
       setDone(true);
       setFiles([]);
       toast({ title: "Documents received ✅", description: "Our visa officer will review them shortly." });
     } catch (e: any) {
-      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+      toast({ title: "Upload failed", description: "We couldn't upload your documents. Please try again.", variant: "destructive" });
     } finally {
       setUploading(false);
     }
   };
+
 
   return (
     <Card>
