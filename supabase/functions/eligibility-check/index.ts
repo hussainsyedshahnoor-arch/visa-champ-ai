@@ -25,41 +25,38 @@ Evaluate this application with STRICT, REALISTIC scoring based on the detailed r
 
 **Applicant Profile:**
 - Full Name: ${formData.fullName}
-- Age: ${formData.age}
-- Marital Status: ${formData.maritalStatus}
-- Travelling With: ${formData.travellingWith || "Solo"}
-- Number of Dependents: ${formData.numberOfDependents || "0"}
-- Employment Status: ${formData.employmentStatus}
-- Business Type/Model: ${formData.businessType || "N/A"}
-- Source of Income: ${formData.incomeSource || "Not specified"}
-- Monthly Income (PKR): ${formData.monthlyIncome}
-- Tax Filer (FBR): ${formData.isTaxFiler ? "Yes" : "No"}
-- Purpose of Visit: ${formData.purposeOfVisit}
+- Country of Residence: ${formData.countryOfResidence || "Pakistan"}
+- Nationality: ${formData.nationality || "Pakistani"}
+- Valid Passport: ${formData.hasValidPassport || "Not specified"}
+- Employment Status: ${formData.employmentStatus || "Not specified"}
+- Years in Current Role/Business: ${formData.yearsInRole || "Not specified"}
+- Regular Monthly Income: ${formData.incomeSource || "Not specified"}
+- Monthly Income Range (PKR): ${formData.monthlyIncome || "Not specified"}
+- Property / Assets in Own Name: ${formData.assetsOwned || "Not specified"}
+- Number of Dependents: ${formData.numberOfDependents || "Not specified"}
+- Purpose of Visit: ${formData.purposeOfVisit || "Not specified"}
+- Planned Length of Stay: ${formData.lengthOfStay || "Not specified"}
 
-**Financial Documents:**
-- Bank Statement Duration: ${formData.bankStatementMonths || "Not specified"} months
-- Closing Balance (PKR): ${formData.closingBalance || formData.bankBalance || "Not specified"}
-- Balance Maintained Consistently (no sudden deposits): ${formData.maintainedBalance ? "Yes" : "No"}
-- Has Active Credit Card: ${formData.hasCreditCard ? "Yes" : "No"}
-- Credit Card Bills Paid On Time: ${formData.creditCardPaidOnTime || "N/A"}
+**Financial Capacity:**
+- Estimated Trip Budget (PKR): ${formData.tripBudget || "Not specified"}
+- Trip Sponsor: ${formData.sponsor || "Not specified"}
+- Bank Account: ${formData.bankAccount || "Not specified"}
+- Current Bank Balance (PKR): ${formData.bankBalance || "Not specified"}
+- Balance Maintained 3+ Months: ${formData.balanceMaintained || "Not specified"}
+- Regular Income Deposits Visible: ${formData.incomeDeposits || "Not specified"}
+- 6-Month Bank Statements Available: ${formData.sixMonthStatements || "Not specified"}
 
 **Travel History:**
-- Has Travel History: ${formData.hasTravelHistory ? "Yes" : "No"}
-- Previous Countries Visited: ${formData.previousCountries || "None"}
-- Travel Frequency (trips per year): ${formData.travelFrequency || "Not specified"}
-- Previously Visited Destination Country: ${formData.previousVisitToDestination ? "Yes" : "No"}
-- Purpose of Previous Travels: ${formData.travelPurposeHistory || "N/A"}
-- Previous Trips Were: ${formData.travelledSoloOrFamily || "N/A"}
+- Traveled Abroad Before: ${formData.travelHistoryStatus || "Not specified"}
+- Countries Visited: ${formData.visitedCountries || "None"}
+- Visa Refusal History: ${formData.visaRefusalHistory || "Not specified"}
+- Overstay / Deportation History: ${formData.overstayHistory || "Not specified"}
 
-**Ties to Home Country:**
-- Owns Property in Pakistan (own name): ${formData.ownsProperty ? "Yes" : "No"}
-- Property Details: ${formData.propertyDetails || "N/A"}
-- Property Documentation Clear: ${formData.propertyDocsClear || "N/A"}
-- Close Family in Pakistan: ${formData.closeFamilyInPakistan || "Not specified"}
+**Travel Itinerary:**
+- Confirmed Itinerary: ${formData.hasItinerary || "Not specified"}
+- Accommodation Bookings: ${formData.hasAccommodation || "Not specified"}
 
-**Other Nationality/Residency:**
-- Has Other Nationality/Passport: ${formData.hasOtherNationality ? "Yes — " + (formData.otherNationality || "Not specified") : "No"}
-- Has Residency in Another Country: ${formData.hasOtherResidency ? "Yes — " + (formData.otherResidencyCountry || "Not specified") : "No"}
+**Referral Source:** ${formData.referralSource || "Not specified"}
 
 **Required Documents for this visa:**
 ${documents.map((d: any) => `- ${d.document_name} (${d.is_mandatory ? "Mandatory" : "Optional"}): ${d.description}`).join("\n")}
