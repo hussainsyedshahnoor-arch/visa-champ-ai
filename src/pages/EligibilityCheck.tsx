@@ -212,12 +212,15 @@ const EligibilityCheck = () => {
     ...ELIGIBILITY_STEPS.flatMap((s) =>
       visibleFields(s.fields).map((f) => {
         const raw = formData[f.key];
+        const other = (formData[`${f.key}Other`] as string) || "";
+        const base = Array.isArray(raw) ? raw.join(", ") || "—" : (raw as string) || "—";
         return {
           label: f.label,
-          value: Array.isArray(raw) ? raw.join(", ") || "—" : (raw as string) || "—",
+          value: other ? `${base} (${other})` : base,
         };
       }),
     ),
+
   ];
 
   const stepIndex = step - 2; // index into ELIGIBILITY_STEPS
