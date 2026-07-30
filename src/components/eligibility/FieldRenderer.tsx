@@ -12,8 +12,12 @@ interface FieldRendererProps {
   hideLabel?: boolean;
 }
 
+const needsOther = (v: unknown) =>
+  typeof v === "string" && (v === "Other" || v.includes("Other") || v.includes("Another nationality"));
+
 const FieldRenderer = ({ field, data, onChange, hideLabel }: FieldRendererProps) => {
   const value = data[field.key];
+  const otherKey = `${field.key}Other`;
 
   const labelBlock = !hideLabel && (
     <div className="space-y-1">
@@ -23,6 +27,16 @@ const FieldRenderer = ({ field, data, onChange, hideLabel }: FieldRendererProps)
       {field.helper && <p className="text-sm text-muted-foreground">{field.helper}</p>}
     </div>
   );
+
+  const otherInput = (placeholder: string) =>
+    needsOther(value) ? (
+      <Input
+        className="mt-2"
+        value={(data[otherKey] as string) || ""}
+        placeholder={placeholder}
+        onChange={(e) => onChange(otherKey, e.target.value)}
+      />
+    ) : null;
 
   if (field.type === "text") {
     return (
@@ -54,9 +68,11 @@ const FieldRenderer = ({ field, data, onChange, hideLabel }: FieldRendererProps)
             ))}
           </SelectContent>
         </Select>
+        {otherInput("Please specify")}
       </div>
     );
   }
+
 
   if (field.type === "radio") {
     return (
