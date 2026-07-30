@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Globe, ArrowLeft, Plus, Trash2, Edit2, Save, X, Shield, ClipboardList, MessageSquare, Calendar, FileText, History, AlertTriangle, StickyNote, Users } from "lucide-react";
+import { Globe, ArrowLeft, Plus, Trash2, Edit2, Save, X, Shield, ClipboardList, MessageSquare, Calendar, FileText, History, AlertTriangle, StickyNote, Users, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
