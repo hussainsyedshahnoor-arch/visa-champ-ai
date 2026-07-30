@@ -106,7 +106,9 @@ const FieldRenderer = ({ field, data, onChange, hideLabel }: FieldRendererProps)
             );
           })}
         </div>
+        {otherInput("Please specify")}
       </div>
+
     );
   }
 
