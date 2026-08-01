@@ -187,13 +187,13 @@ E) Tax Filing:
 - Cannot provide 6-month bank statements = MAJOR negative (-15)
 
 
-**SCORE BANDS (STRICT):**
-- 80-95: HIGH CHANCE — ONLY for genuinely strong profiles with MOST of: strong finances (maintained, above threshold), extensive quality travel history (selective countries), strong home ties (family staying behind, property in own name), stable documented income, tax filer
+**SCORE BANDS:**
+- 80-95: HIGH CHANCE — Tier 3 destinations with no hard negative belong here by default. For Tier 1/2 this requires MOST of: strong finances (maintained, above threshold), quality travel history (selective countries), strong home ties, stable documented income, tax filer
 - 50-79: MEDIUM CHANCE — Decent profiles with some strengths but notable gaps
 - 20-49: LOW CHANCE — Weak profiles with multiple red flags
 - 0-19: VERY LOW CHANCE — Major disqualifying factors
 
-**CRITICAL RULES:**
+**CRITICAL RULES (these apply to TIER 1 destinations; relax them for Tier 2 and IGNORE them for Tier 3):**
 - Travelling with spouse alone does NOT make it a strong profile
 - Being married is NOT enough for a high score
 - Having property + full family travelling = property advantage is NEGATED
@@ -201,6 +201,9 @@ E) Tax Filing:
 - A married person + full family + no strong travel history + no property = score 25-40 MAX
 - Single + young + unemployed/student + no travel + no property = score 15-35 MAX
 - Has residency/nationality in Western/developed country = SIGNIFICANT BOOST (+15-25)
+
+**FINAL TIER CHECK before you output the score:** if ${countryName} is Tier 3 and the applicant has no deportation/ban, no overstay, and no multiple refusals, the score MUST be 75 or above (normally 80-92) and the verdict MUST be High Chance. Do not apply western-country thresholds to a Tier 3 destination.
+
 
 Provide your assessment in this format:
 1. **Eligibility Score:** X/100
