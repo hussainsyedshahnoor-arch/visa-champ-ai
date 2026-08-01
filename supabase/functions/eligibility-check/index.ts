@@ -66,7 +66,31 @@ ${criteria.map((c: any) => `- ${c.criteria_name}: ${c.criteria_description}${c.m
 
 ===== DETAILED SCORING RULES — FOLLOW STRICTLY =====
 
-**1. TRAVEL HISTORY ANALYSIS (Major Factor)**
+**0. DESTINATION TIER — APPLY THIS FIRST (it overrides the strictness of every rule below)**
+
+Classify ${countryName} into a tier:
+
+- TIER 3 (EASY / LOW-TIER, generous approval): Thailand, Malaysia, Sri Lanka, Indonesia, Maldives, Nepal, Azerbaijan, Georgia, Kenya, Egypt, Uzbekistan, Kazakhstan, Kyrgyzstan, Cambodia, Vietnam, Philippines, Jordan, Morocco, Tanzania, Ethiopia, Rwanda, Qatar, Bahrain, Oman, UAE, Saudi Arabia, Turkey and similar visa-on-arrival / e-visa friendly destinations.
+- TIER 2 (MODERATE): Japan, South Korea, China, Singapore, Russia, Brazil, Mexico, South Africa, Serbia, Albania, Bosnia.
+- TIER 1 (STRICT / SELECTIVE): USA, Canada, UK, Ireland, Schengen Area (all Schengen states: Germany, France, Italy, Spain, Netherlands, Greece, Portugal, Austria, Switzerland, Belgium, Sweden, Norway, Denmark, Finland, Poland, Czechia, Hungary, Croatia and the rest), Australia, New Zealand.
+
+Scoring behaviour by tier:
+
+- **TIER 3 → BE GENEROUS.** These countries approve the vast majority of Pakistani tourist applicants. Start the assessment at a BASE of 82 and expect a HIGH CHANCE verdict (80-92). Weak travel history, no property, modest income, single/young, small bank balance, no itinerary, no prior travel — these are NOT disqualifying for Tier 3 and must cost at most 2-4 points each, with a floor of 75 unless a hard negative below applies. Bank balance expectation for Tier 3 is modest: PKR 3-6 lacs per person is sufficient; do not demand 15 lacs.
+- **TIER 2 → MODERATE.** Start at a base of 68. Apply the factors below at roughly HALF the stated penalty weight.
+- **TIER 1 → STRICT.** Start at a base of 55 and apply every rule below at FULL weight, including the western-country thresholds (PKR 15 lacs per person, strong home ties, quality travel history).
+
+**HARD NEGATIVES — these apply in EVERY tier and are the only things that should push a Tier 3 application out of the High Chance band:**
+- Deported or banned from any country = cap the score at 15 (all tiers).
+- Overstayed a visa = -25 to -35 (all tiers).
+- Refused a visa multiple times = -20 to -25; refused once = -8 to -12 (all tiers). For Tier 3, if the refusal was for a Tier 1 country only and there is no overstay/deportation, use the lower end of the penalty.
+- No valid passport = cap the score at 45 and list passport as the first action item.
+- Cannot provide any bank statement / no verifiable funds at all = -15.
+
+Never give a Tier 3 destination a Low or Very Low verdict unless one of the hard negatives above applies.
+
+**1. TRAVEL HISTORY ANALYSIS (Major Factor — full weight for Tier 1 only)**
+
 
 A) Previous Visit Quality:
 - Visited SAME destination country before = STRONG positive (+10-15)
@@ -163,13 +187,13 @@ E) Tax Filing:
 - Cannot provide 6-month bank statements = MAJOR negative (-15)
 
 
-**SCORE BANDS (STRICT):**
-- 80-95: HIGH CHANCE — ONLY for genuinely strong profiles with MOST of: strong finances (maintained, above threshold), extensive quality travel history (selective countries), strong home ties (family staying behind, property in own name), stable documented income, tax filer
+**SCORE BANDS:**
+- 80-95: HIGH CHANCE — Tier 3 destinations with no hard negative belong here by default. For Tier 1/2 this requires MOST of: strong finances (maintained, above threshold), quality travel history (selective countries), strong home ties, stable documented income, tax filer
 - 50-79: MEDIUM CHANCE — Decent profiles with some strengths but notable gaps
 - 20-49: LOW CHANCE — Weak profiles with multiple red flags
 - 0-19: VERY LOW CHANCE — Major disqualifying factors
 
-**CRITICAL RULES:**
+**CRITICAL RULES (these apply to TIER 1 destinations; relax them for Tier 2 and IGNORE them for Tier 3):**
 - Travelling with spouse alone does NOT make it a strong profile
 - Being married is NOT enough for a high score
 - Having property + full family travelling = property advantage is NEGATED
@@ -177,6 +201,9 @@ E) Tax Filing:
 - A married person + full family + no strong travel history + no property = score 25-40 MAX
 - Single + young + unemployed/student + no travel + no property = score 15-35 MAX
 - Has residency/nationality in Western/developed country = SIGNIFICANT BOOST (+15-25)
+
+**FINAL TIER CHECK before you output the score:** if ${countryName} is Tier 3 and the applicant has no deportation/ban, no overstay, and no multiple refusals, the score MUST be 75 or above (normally 80-92) and the verdict MUST be High Chance. Do not apply western-country thresholds to a Tier 3 destination.
+
 
 Provide your assessment in this format:
 1. **Eligibility Score:** X/100
